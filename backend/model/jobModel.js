@@ -38,6 +38,10 @@ const jobSchema = new Schema({
         ref: 'User',
         required: true,
     },
+     isDeleted: {
+    type: Boolean,
+    default: false, // default means job is *not deleted*
+  },
     status: {
         type: String,
         enum: ['open', 'in-progress', 'completed', 'cancelled'], 

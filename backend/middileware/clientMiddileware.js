@@ -8,8 +8,6 @@ const authClient = async (req, res, next) => {
   }
 
   const token = authHeader.split(" ")[1];
-  console.log("🟢 Received token:", token);
-  console.log("🔍 [VERIFY] process.env.JWT_SECRET =", process.env.JWT_SECRET);
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
@@ -25,7 +23,6 @@ const authClient = async (req, res, next) => {
     req.user = user;
     next();
   } catch (error) {
-    console.error("❌ Token verification error:", error);
     return res.status(403).json({ message: "Invalid or expired token" });
   }
 };

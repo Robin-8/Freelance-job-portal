@@ -86,14 +86,11 @@ const addJob = async (req, res) => {
         .status(400)
         .json({ message: "Please provide all required fields" });
     }
-
-    // ❌ Wrong: you had `if (!req.user || req.user.id)` → this is always true
-    // ✅ Correct check:
     if (!req.user || !req.user._id) {
       return res.status(401).json({ message: "User not found or unauthorized" });
     }
 
-    // ✅ Correct model creation (no `new jobModel.create`)
+    
     const newJob = await jobModel.create({
       title,
       description,
@@ -101,7 +98,7 @@ const addJob = async (req, res) => {
       budgetType,
       budget,
       deadline,
-      postedBy: req.user._id, // ✅ correct field
+      postedBy: req.user._id,
     });
 
     return res.status(201).json({ message: "Job created successfully", job: newJob });
@@ -111,4 +108,54 @@ const addJob = async (req, res) => {
   }
 };
 
-module.exports = { register, login, addJob };
+const updateJob = async (req, res) => {
+  const { id } = req.params;
+  const { title, description, skillsRequired, budgetType, budget, deadline } = req.body;
+
+  const updatedJobData = { title, description, skillsRequired, budgetType, budget, deadline };
+
+  try {
+    const updatedJob = await jobModel.findByIdAndUpdate(id, updatedJobData, { new: true });
+    if (!updatedJob) {
+      return res.status(404).json({ message: 'Job not found' });
+    }
+    res.status(200).json({ message: 'Job updated successfully', updatedJob });
+  } catch (error) {
+    console.error('Error updating job:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+};
+const deleteJob = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const job = await jobModel.findByIdAndUpdate(
+      id,
+      { isDeleted: true },
+      { new: true }
+    );
+
+    if (!job) {
+      return res.status(404).json({ message: "Job not found" });
+    }
+
+    res.status(200).json({ message: "Job soft deleted successfully", job });
+  } catch (error) {
+    console.error("Error soft deleting job:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+const getAllJobs = async (req, res) => {
+  try {
+    const jobs = await jobModel.find({ isDeleted: false });
+    res.status(200).json(jobs);
+  } catch (error) {
+    console.error("Error fetching jobs:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+
+
+module.exports = { register, login, addJob, updateJob, getAllJobs, deleteJob};
