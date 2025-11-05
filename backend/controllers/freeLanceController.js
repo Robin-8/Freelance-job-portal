@@ -1,8 +1,8 @@
-
-const bcrypt =require('bcrypt')
+const bcrypt = require("bcrypt");
 const { generateToken } = require("../jwt/jwt");
 const User = require("../model/clientModel");
-const jobModel = require('../model/jobModel');
+const jobModel = require("../model/jobModel");
+const proposalModel = require("../model/proposalModel");
 
 const register = async (req, res) => {
   const { name, email, password, role } = req.body;
@@ -27,7 +27,7 @@ const register = async (req, res) => {
     await newUser.save();
 
     const token = await generateToken(newUser);
-    console.log(token,'token here')
+    console.log(token, "token here");
     return res.status(201).json({
       message: "Freelance registered successfully",
       user: newUser,
@@ -38,9 +38,6 @@ const register = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
-
-
-
 
 const login = async (req, res) => {
   const { email, password } = req.body;
@@ -74,17 +71,39 @@ const login = async (req, res) => {
   }
 };
 
-const getJobs = async(req,res)=>{
-    try {
-        const jobs = await jobModel.find({isDeleted:false})
-        if(!jobs){
-            return res.status(401).json({message:"No jobs finded"})
-        }
-        return res.status(200).json({message:'Here is all jobs',jobs})
-    } catch (error) {
-        return res.status(500).json({message:'internal server error'})
+const getJobs = async (req, res) => {
+  try {
+    const jobs = await jobModel.find({ isDeleted: false });
+    if (!jobs) {
+      return res.status(401).json({ message: "No jobs finded" });
     }
-}
+    return res.status(200).json({ message: "Here is all jobs", jobs });
+  } catch (error) {
+    return res.status(500).json({ message: "internal server error" });
+  }
+};
+const applyJobs = async (req, res) => {
+  const id = req.params.id; 
+  const freelancerId = req.user.id;
+  const { coverLetter, bidAmount } = req.body;
 
-module.exports = { register, login,getJobs };
+  try {
+    const jobs = await jobModel.findById(id);
+    if (!jobs) {
+      return res.status(401).json({ message: "Job not found" });
+    }
+    const proposal = await proposalModel.create({
+      job: id,
+      freelancer: freelancerId,
+      coverLetter,
+      bidAmount,
+    });
+    jobs.proposalsCount += 1;
+    await jobs.save();
 
+    return res.status(200).json({ message: "applied successfully", proposal });
+  } catch (error) {
+    return res.status(500).json({ message: "internal error", error });
+  }
+};
+module.exports = { register, login, getJobs, applyJobs };

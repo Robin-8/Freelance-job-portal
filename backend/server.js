@@ -1,26 +1,27 @@
 require("dotenv").config();
-const express =require('express')
-const connectDb = require('./config/db')
-const cors =require('cors')
-const clientRoute =require('./routes/clientRoute')
-const adminRoute = require('./routes/adminRoute')
-const freeLanceRoute = require('./routes/freeLanceRoute')
+const express = require("express");
+const connectDb = require("./config/db");
+const cors = require("cors");
+
+const clientRoute = require("./routes/clientRoute");
+const adminRoute = require("./routes/adminRoute");
+const freeLanceRoute = require("./routes/freeLanceRoute");
+
+const app = express();
 
 
+app.use(cors());
+app.use(express.json()); 
+app.use(express.urlencoded({ extended: false })); 
 
-const app = express()
-app.use(cors()) 
-app.use(express.json())
-express.urlencoded({ extended: false })
+app.use("/client", clientRoute);
+app.use("/admin", adminRoute);
+app.use("/freelancer", freeLanceRoute);
 
-app.use('/client',clientRoute)
-app.use('/admin',adminRoute)
-app.use('/freelancer',freeLanceRoute)
+const PORT = process.env.PORT || 3000;
 
-const PORT = process.env.PORT || 3000
 
- 
-connectDb()
+connectDb();
 
 app.listen(PORT, () => {
   console.log(`✅ App running on http://localhost:${PORT}`);
