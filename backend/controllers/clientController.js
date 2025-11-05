@@ -80,7 +80,6 @@ const addJob = async (req, res) => {
   const { title, description, skillsRequired, budgetType, budget, deadline } = req.body;
 
   try {
-    // ✅ Validate input
     if (!title || !description || !budget || !deadline) {
       return res
         .status(400)

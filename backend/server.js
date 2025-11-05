@@ -3,6 +3,8 @@ const express =require('express')
 const connectDb = require('./config/db')
 const cors =require('cors')
 const clientRoute =require('./routes/clientRoute')
+const adminRoute = require('./routes/adminRoute')
+const freeLanceRoute = require('./routes/freeLanceRoute')
 
 
 
@@ -12,6 +14,8 @@ app.use(express.json())
 express.urlencoded({ extended: false })
 
 app.use('/client',clientRoute)
+app.use('/admin',adminRoute)
+app.use('/freelancer',freeLanceRoute)
 
 const PORT = process.env.PORT || 3000
 
