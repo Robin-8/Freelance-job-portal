@@ -2,6 +2,7 @@ const bcrypt = require("bcrypt");
 const clientModel = require("../model/clientModel");
 const jobModel = require("../model/jobModel");
 const { generateToken } = require("../jwt/jwt");
+const proposalModel = require("../model/proposalModel");
 
 // ==================== REGISTER ====================
 const register = async (req, res) => {
@@ -155,6 +156,29 @@ const getAllJobs = async (req, res) => {
   }
 };
 
+const proposalReceived =async(req,res)=>{
+
+   try {
+    const jobs = await jobModel.find({postedBy:req.user._id})
+    if(!jobs || jobs.length<0){
+      return res.status(403).json({message:"job not found"})
+    }
+    const jobId = jobs.map(job=>job._id)
+
+    const preposal = await proposalModel.find({job:{$in:jobId}}).populate("freelancer", "name email ") 
+      .populate("job", "title budget deadline")
+      .sort({ createdAt: -1 });
+
+      if(preposal.length==0){
+        return res.status(401).json({message:'no preposal'})
+      }
+      return res.status(200).json({message:"Preposal fetched successfully",preposal})
+   } catch (error) {
+    console.log(error)
+    return res.status(500).json({message:"internal server error",error})
+   }
+}
 
 
-module.exports = { register, login, addJob, updateJob, getAllJobs, deleteJob};
+
+module.exports = { register, login, addJob, updateJob, getAllJobs, deleteJob, proposalReceived};
