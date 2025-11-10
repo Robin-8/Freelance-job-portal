@@ -83,7 +83,7 @@ const getJobs = async (req, res) => {
   }
 };
 const applyJobs = async (req, res) => {
-  const id = req.params.id; 
+  const id = req.params.id;
   const freelancerId = req.user.id;
   const { coverLetter, bidAmount } = req.body;
 
@@ -106,4 +106,21 @@ const applyJobs = async (req, res) => {
     return res.status(500).json({ message: "internal error", error });
   }
 };
-module.exports = { register, login, getJobs, applyJobs };
+
+const getAllPreposals = async (req, res) => {
+  try {
+    const preposal = await proposalModel
+      .find({ freelancer: req.user._id })
+      .populate("job", "title budget deadline")
+      .sort({ createdAt: -1 });
+
+    if (!preposal) {
+      return res.status(401).json({ message: "No preposal found" });
+    }
+    return res.status(200).json({ message: "all preposal here", preposal });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Internal server error", error });
+  }
+};
+module.exports = { register, login, getJobs, applyJobs, getAllPreposals };

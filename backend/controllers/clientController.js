@@ -78,7 +78,8 @@ const login = async (req, res) => {
 
 // ==================== ADD JOB ====================
 const addJob = async (req, res) => {
-  const { title, description, skillsRequired, budgetType, budget, deadline } = req.body;
+  const { title, description, skillsRequired, budgetType, budget, deadline } =
+    req.body;
 
   try {
     if (!title || !description || !budget || !deadline) {
@@ -87,10 +88,11 @@ const addJob = async (req, res) => {
         .json({ message: "Please provide all required fields" });
     }
     if (!req.user || !req.user._id) {
-      return res.status(401).json({ message: "User not found or unauthorized" });
+      return res
+        .status(401)
+        .json({ message: "User not found or unauthorized" });
     }
 
-    
     const newJob = await jobModel.create({
       title,
       description,
@@ -101,7 +103,9 @@ const addJob = async (req, res) => {
       postedBy: req.user._id,
     });
 
-    return res.status(201).json({ message: "Job created successfully", job: newJob });
+    return res
+      .status(201)
+      .json({ message: "Job created successfully", job: newJob });
   } catch (error) {
     console.error("Add Job Error:", error);
     return res.status(500).json({ message: "Internal server error", error });
@@ -110,19 +114,29 @@ const addJob = async (req, res) => {
 
 const updateJob = async (req, res) => {
   const { id } = req.params;
-  const { title, description, skillsRequired, budgetType, budget, deadline } = req.body;
+  const { title, description, skillsRequired, budgetType, budget, deadline } =
+    req.body;
 
-  const updatedJobData = { title, description, skillsRequired, budgetType, budget, deadline };
+  const updatedJobData = {
+    title,
+    description,
+    skillsRequired,
+    budgetType,
+    budget,
+    deadline,
+  };
 
   try {
-    const updatedJob = await jobModel.findByIdAndUpdate(id, updatedJobData, { new: true });
+    const updatedJob = await jobModel.findByIdAndUpdate(id, updatedJobData, {
+      new: true,
+    });
     if (!updatedJob) {
-      return res.status(404).json({ message: 'Job not found' });
+      return res.status(404).json({ message: "Job not found" });
     }
-    res.status(200).json({ message: 'Job updated successfully', updatedJob });
+    res.status(200).json({ message: "Job updated successfully", updatedJob });
   } catch (error) {
-    console.error('Error updating job:', error);
-    res.status(500).json({ message: 'Internal server error' });
+    console.error("Error updating job:", error);
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 const deleteJob = async (req, res) => {
@@ -156,29 +170,68 @@ const getAllJobs = async (req, res) => {
   }
 };
 
-const proposalReceived =async(req,res)=>{
-
-   try {
-    const jobs = await jobModel.find({postedBy:req.user._id})
-    if(!jobs || jobs.length<0){
-      return res.status(403).json({message:"job not found"})
+const proposalReceived = async (req, res) => {
+  try {
+    const jobs = await jobModel.find({ postedBy: req.user._id });
+    if (!jobs || jobs.length < 0) {
+      return res.status(403).json({ message: "job not found" });
     }
-    const jobId = jobs.map(job=>job._id)
+    const jobId = jobs.map((job) => job._id);
 
-    const preposal = await proposalModel.find({job:{$in:jobId}}).populate("freelancer", "name email ") 
+    const preposal = await proposalModel
+      .find({ job: { $in: jobId } })
+      .populate("freelancer", "name email ")
       .populate("job", "title budget deadline")
       .sort({ createdAt: -1 });
 
-      if(preposal.length==0){
-        return res.status(401).json({message:'no preposal'})
-      }
-      return res.status(200).json({message:"Preposal fetched successfully",preposal})
-   } catch (error) {
-    console.log(error)
-    return res.status(500).json({message:"internal server error",error})
-   }
-}
+    if (preposal.length == 0) {
+      return res.status(401).json({ message: "no preposal" });
+    }
+    return res
+      .status(200)
+      .json({ message: "Preposal fetched successfully", preposal });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: "internal server error", error });
+  }
+};
 
+const proposalStatus = async (req, res) => {
+  const { preposalId } = req.params;
+  const { status } = req.body;
+  console.log(req.params,'params here')
+  console.log(req.body,"bode here")
+  try {
+    if (!["pending", "accepted", "rejected"].includes(status)) {
+      return res.status(401).json({ message: "Preposal not found" });
+    }
+    const updatePreposal = await proposalModel.findByIdAndUpdate(
+      preposalId,
+      { status },
+      { new: true }
+    );
 
+    if (!updatePreposal) {
+      return res.status(401).json({ message: "perposal not found" });
+    }
+    return res
+      .status(200)
+      .json({
+        message: `Proposal status updated to ${status}`,
+        preposal: updatePreposal,
+      });
+  } catch (error) {
+     res.status(500).json({ message: error.message });
+  }
+};
 
-module.exports = { register, login, addJob, updateJob, getAllJobs, deleteJob, proposalReceived};
+module.exports = {
+  register,
+  login,
+  addJob,
+  updateJob,
+  getAllJobs,
+  deleteJob,
+  proposalReceived,
+  proposalStatus
+};
