@@ -3,6 +3,7 @@ const { generateToken } = require("../jwt/jwt");
 const User = require("../model/clientModel");
 const jobModel = require("../model/jobModel");
 const proposalModel = require("../model/proposalModel");
+const clientModel = require("../model/clientModel");
 
 const register = async (req, res) => {
   const { name, email, password, role } = req.body;
@@ -73,15 +74,35 @@ const login = async (req, res) => {
 
 const getJobs = async (req, res) => {
   try {
-    const jobs = await jobModel.find({ isDeleted: false });
-    if (!jobs) {
-      return res.status(401).json({ message: "No jobs finded" });
+    const { skill, budget, sort, title } = req.query;
+    let filter = { isDeleted: false };
+
+    if (title) filter.title = { $regex: title, $options: "i" };
+
+    if (skill) filter.skillsRequired = { $regex: skill, $options: "i" };
+
+    if (budget) filter.budget = { $lte: Number(budget) };
+
+    let query = jobModel.find(filter);
+
+    if (sort === "latest") query = query.sort({ createdAt: -1 });
+    else if (sort === "oldest") query = query.sort({ createdAt: 1 });
+    else if (sort === "budget-high") query = query.sort({ budget: -1 });
+    else if (sort === "budget-low") query = query.sort({ budget: 1 });
+
+    const jobs = await query;
+
+    if (!jobs || jobs.length === 0) {
+      return res.status(404).json({ message: "No jobs found" });
     }
+
     return res.status(200).json({ message: "Here is all jobs", jobs });
   } catch (error) {
-    return res.status(500).json({ message: "internal server error" });
+    console.error(error);
+    return res.status(500).json({ message: "Internal server error" });
   }
 };
+
 const applyJobs = async (req, res) => {
   const id = req.params.id;
   const freelancerId = req.user.id;
@@ -123,4 +144,40 @@ const getAllPreposals = async (req, res) => {
     res.status(500).json({ message: "Internal server error", error });
   }
 };
-module.exports = { register, login, getJobs, applyJobs, getAllPreposals };
+const updateProfile = async (req, res) => {
+  try {
+    const { name, email, skills } = req.body;
+
+    const update = await User.findByIdAndUpdate(
+      req.user._id,
+      { name, email, skills },
+      {
+        new: true,
+      }
+    );
+    if(!update){
+      return res.status(401).json({message:"no user found with this id"})
+    }
+    return res.status(200).json({message:"user updated successfully",update})
+  } catch (error) {
+    return res.status(500).json({message:"internal server error",error})
+  }
+};
+
+const withdrawProposal = async(req,res)=>{
+  const {proposalId}=req.params
+  try {
+    const preposal = await proposalModel.findOne({
+      _id: proposalId,
+      freelancer: req.user._id
+    });
+    if(!preposal){
+      return res.status(201).json({message:"no job found"})
+    }
+    await preposal.deleteOne()
+    return res.status(200).json({message:"job preposal deleted successfully"})
+  } catch (error) {
+     return res.status(500).json({message:"internal server error",error})
+  }
+}
+module.exports = { register, login, getJobs, applyJobs, getAllPreposals, updateProfile, withdrawProposal };

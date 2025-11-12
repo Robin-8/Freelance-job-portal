@@ -92,7 +92,7 @@ const addJob = async (req, res) => {
         .status(401)
         .json({ message: "User not found or unauthorized" });
     }
-
+ 
     const newJob = await jobModel.create({
       title,
       description,
