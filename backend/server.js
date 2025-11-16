@@ -20,9 +20,9 @@ app.use(
 app.use(express.json()); 
 app.use(express.urlencoded({ extended: false })); 
 
-app.use("/client", clientRoute);
-app.use("/admin", adminRoute);
-app.use("/freelancer", freeLanceRoute);
+app.use("/api/client", clientRoute);
+app.use("/api/admin", adminRoute);
+app.use("/api/freelancer", freeLanceRoute);
 
 const PORT = process.env.PORT || 3000;
 

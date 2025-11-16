@@ -71,6 +71,18 @@ const login = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+const getJobById = async (req, res) => {
+  const {id}=req.params
+  try {
+    const job = await jobModel.findById(id);
+
+    if (!job) return res.status(404).json({ message: "Job not found" });
+
+    return res.status(200).json({ message: "Job fetched", job });
+  } catch (error) {
+    return res.status(500).json({ message: "Internal server error" });
+  }
+};
 
 const getJobs = async (req, res) => {
   try {
@@ -109,24 +121,35 @@ const applyJobs = async (req, res) => {
   const { coverLetter, bidAmount } = req.body;
 
   try {
-    const jobs = await jobModel.findById(id);
-    if (!jobs) {
-      return res.status(401).json({ message: "Job not found" });
+    const job = await jobModel.findById(id);
+    if (!job) {
+      return res.status(404).json({ message: "Job not found" });
     }
+
+    // Create proposal
     const proposal = await proposalModel.create({
       job: id,
       freelancer: freelancerId,
       coverLetter,
       bidAmount,
     });
-    jobs.proposalsCount += 1;
-    await jobs.save();
 
-    return res.status(200).json({ message: "applied successfully", proposal });
+    // Increment proposal count WITHOUT re-validating the job
+    await jobModel.updateOne(
+      { _id: id },
+      { $inc: { proposalsCount: 1 } }
+    );
+
+    return res.status(200).json({
+      message: "Applied successfully",
+      proposal,
+    });
   } catch (error) {
-    return res.status(500).json({ message: "internal error", error });
+    console.error("Apply Job Error:", error);
+    return res.status(500).json({ message: "Internal server error" });
   }
 };
+
 
 const getAllPreposals = async (req, res) => {
   try {
@@ -180,4 +203,4 @@ const withdrawProposal = async(req,res)=>{
      return res.status(500).json({message:"internal server error",error})
   }
 }
-module.exports = { register, login, getJobs, applyJobs, getAllPreposals, updateProfile, withdrawProposal };
+module.exports ={register, login, getJobs, applyJobs, getAllPreposals, updateProfile, withdrawProposal, getJobById};
