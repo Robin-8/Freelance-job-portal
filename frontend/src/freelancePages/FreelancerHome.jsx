@@ -19,7 +19,7 @@ const FreelancerHome = () => {
       {/* Quick Actions */}
       <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
         <Link
-          to="/jobs"
+          to="/freelancer/searchJobs"
           className="bg-white p-6 rounded-xl shadow hover:shadow-lg border hover:border-blue-500 transition-all"
         >
           <h2 className="text-xl font-bold">Find Jobs</h2>

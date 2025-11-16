@@ -4,15 +4,31 @@ import ClientRegister from "./clientPages/clientRegister";
 import Layout from "./components/Layout";
 import ClientLogin from "./clientPages/ClientLogin";
 import FreelancerHome from "./freelancePages/FreelancerHome";
+import FreelancerSearch from "./freelancePages/FreelancerSearch";
+import FreelanceJobDetails from "./freelancePages/FreelanceJobDetails";
+import FreelanceRegister from "./freelancePages/FreelanceRegister";
+import FreelanceLogin from "./freelancePages/FreelanceLogin";
+import ClientHome from "./clientPages/ClientHome";
+import AdminHome from "./adminPages/AdminHome";
 
 function App() {
   return (
     <>
       <Routes>
         <Route element={<Layout />}>
-          <Route path="/freelancer/register" element={<ClientRegister />} />
-          <Route path="/freelancer/login" element={<ClientLogin/>}/>
+          <Route path="/freelancer/register" element={<FreelanceRegister />} />
+          <Route path="/freelancer/login" element={<FreelanceLogin/>}/>
           <Route path="/freelancer/freelacerHome" element={<FreelancerHome/>}/>
+          <Route path="/freelancer/searchJobs" element={<FreelancerSearch/>}/>
+          <Route path="/freelancer/applyJob/:id" element={<FreelanceJobDetails />} />
+
+          // Route for clients 
+          <Route path="/client/register" element={<ClientRegister/>}/>
+          <Route path="/client/login" element={<ClientLogin/>}/>
+          <Route path="/client/home" element={<ClientHome/>}/>
+
+          //Admin route
+          <Route path="admin/home" element={<AdminHome/>}/>
         </Route>
       </Routes>
     </>
