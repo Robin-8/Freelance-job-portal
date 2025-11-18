@@ -199,8 +199,7 @@ const proposalReceived = async (req, res) => {
 const proposalStatus = async (req, res) => {
   const { preposalId } = req.params;
   const { status } = req.body;
-  console.log(req.params,'params here')
-  console.log(req.body,"bode here")
+  
   try {
     if (!["pending", "accepted", "rejected"].includes(status)) {
       return res.status(401).json({ message: "Preposal not found" });
