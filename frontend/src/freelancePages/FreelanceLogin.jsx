@@ -3,7 +3,7 @@ import { useForm } from "react-hook-form";
 import axiosInstance from "../api/axiosApi";
 import { useDispatch } from "react-redux";
 import { login } from "../slice/clientSlice";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const FreelanceLogin = () => {
   const dispatch = useDispatch();
@@ -14,7 +14,7 @@ const FreelanceLogin = () => {
     handleSubmit,
     formState: { errors },
   } = useForm();
-
+  const navigate =useNavigate()
   const onSubmit = async (formData) => {
     try {
       setLoading(true);
@@ -25,6 +25,9 @@ const FreelanceLogin = () => {
       dispatch(login({ user, token }));
       alert("✅ Login Successful!");
 
+      localStorage.setItem("token", token);
+      localStorage.setItem("role", user.role);
+      navigate('/freelancer/freelancerHome')
     } catch (error) {
       console.error("Login error:", error.response?.data || error.message);
       alert(error.response?.data?.message || "Login failed");
@@ -35,16 +38,13 @@ const FreelanceLogin = () => {
 
   return (
     <div className="min-h-screen bg-black flex items-center justify-center px-4">
-
       {/* Login Card */}
       <div className="bg-red-700 w-full max-w-md rounded-2xl shadow-xl p-8">
-
         <h2 className="text-3xl font-bold text-center text-white mb-6">
           Freelancer Login
         </h2>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-
           {/* Email */}
           <div>
             <label className="block text-white font-medium mb-1">Email</label>
@@ -62,7 +62,9 @@ const FreelanceLogin = () => {
 
           {/* Password */}
           <div>
-            <label className="block text-white font-medium mb-1">Password</label>
+            <label className="block text-white font-medium mb-1">
+              Password
+            </label>
             <input
               {...register("password", { required: "Password is required" })}
               type="password"
@@ -89,7 +91,10 @@ const FreelanceLogin = () => {
         {/* Register Navigation */}
         <p className="text-center text-black font-bold mt-5 text-sm">
           Don’t have an account?{" "}
-          <Link to="/freelancer/register" className="text-white underline font-semibold">
+          <Link
+            to="/freelancer/register"
+            className="text-white underline font-semibold"
+          >
             Register here
           </Link>
         </p>

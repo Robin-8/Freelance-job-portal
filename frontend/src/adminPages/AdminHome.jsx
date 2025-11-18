@@ -6,7 +6,6 @@ const AdminHome = () => {
   return (
     <div className="min-h-screen bg-gray-950 text-white px-6 py-10">
 
-      {/* Header Section */}
       <div className="max-w-6xl mx-auto">
         <h1 className="text-4xl font-bold">Admin Dashboard ⚡</h1>
         <p className="text-gray-400 text-lg mt-2">
@@ -14,10 +13,10 @@ const AdminHome = () => {
         </p>
       </div>
 
-      {/* Cards Section */}
+      
       <div className="max-w-6xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-10">
 
-        {/* Manage Users */}
+        
         <Link
           to="/admin/users"
           className="group bg-gray-900 p-6 rounded-2xl shadow hover:shadow-xl hover:bg-gray-850 transition duration-300 cursor-pointer"
@@ -29,7 +28,7 @@ const AdminHome = () => {
           </p>
         </Link>
 
-        {/* Manage Jobs */}
+        
         <Link
           to="/admin/jobs"
           className="group bg-gray-900 p-6 rounded-2xl shadow hover:shadow-xl transition"
@@ -41,7 +40,7 @@ const AdminHome = () => {
           </p>
         </Link>
 
-        {/* Proposals */}
+        
         <Link
           to="/admin/proposals"
           className="group bg-gray-900 p-6 rounded-2xl shadow hover:shadow-xl transition"
@@ -53,7 +52,7 @@ const AdminHome = () => {
           </p>
         </Link>
 
-        {/* System Settings */}
+        
         <Link
           to="/admin/settings"
           className="group bg-gray-900 p-6 rounded-2xl shadow hover:shadow-xl transition"
@@ -66,7 +65,7 @@ const AdminHome = () => {
         </Link>
       </div>
 
-      {/* Recent Activity */}
+     
       <div className="max-w-6xl mx-auto mt-16">
         <h3 className="text-2xl font-semibold mb-6">Recent Activity</h3>
 
