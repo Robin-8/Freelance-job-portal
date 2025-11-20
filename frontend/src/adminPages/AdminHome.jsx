@@ -18,7 +18,7 @@ const AdminHome = () => {
 
         
         <Link
-          to="/admin/users"
+          to="/admin/userMgt"
           className="group bg-gray-900 p-6 rounded-2xl shadow hover:shadow-xl hover:bg-gray-850 transition duration-300 cursor-pointer"
         >
           <Users className="w-10 h-10 text-blue-400 group-hover:scale-110 transition" />

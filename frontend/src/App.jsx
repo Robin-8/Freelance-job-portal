@@ -1,6 +1,5 @@
 import "./App.css";
 import { Routes, Route } from "react-router-dom";
-import ClientRegister from "./clientPages/clientRegister";
 import Layout from "./components/Layout";
 import ClientLogin from "./clientPages/ClientLogin";
 import FreelancerHome from "./freelancePages/FreelancerHome";
@@ -17,7 +16,10 @@ import FreelancerSentProposals from "./freelancePages/FreelancerSentProposals";
 import AddJob from "./clientPages/AddJob";
 import FreelanceUpdateProfile from "./freelancePages/FreelanceUpdateProfile";
 import FreelanceProfile from "./freelancePages/FreelanceProfile";
-import AdminUsers from "./adminPages/AdminUsers";
+import ClientRegister from "./clientPages/ClientRegister";
+import AdminMgtUsers from "./adminPages/AdminMgtUsers";
+
+
 
 function App() {
   return (
@@ -45,7 +47,8 @@ function App() {
           <Route path="/admin/home" element={<AdminHome/>}/>
           <Route path="/admin/login" element={<AdminLogin/>}/>
           <Route path="/admin/register" element={<AdminRegister/>}/>
-          <Route path="/admin/adminUsers" element={<AdminUsers/>}/>
+          <Route path="/admin/userMgt" element={<AdminMgtUsers/>}/>
+          
         </Route>
       </Routes>
     </>
