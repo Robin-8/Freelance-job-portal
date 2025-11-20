@@ -2,8 +2,22 @@ import React from "react";
 import { Link } from "react-router-dom";
 import CompanyLogos from "../components/CompanyLogos";
 import FeaturedJobs from "./FeaturedJobs ";
+import { useSelector } from "react-redux";
+import { useQuery } from "@tanstack/react-query";
+import axiosInstance from "../api/axiosApi";
 
 const FreelancerHome = () => {
+  const { token } = useSelector((state) => state.client);
+  const { data: proposalData } = useQuery({
+    queryKey: ["proposalCount"],
+    queryFn: async () => {
+      const res = await axiosInstance.get("/freelancer/preposalCount", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      return res.data;
+    },
+  });
+
   return (
     <div className="bg-black-100 min-h-screen p-6">
       {/* Header */}
@@ -29,9 +43,16 @@ const FreelancerHome = () => {
         </Link>
 
         <Link
-          to="/freelancer/proposals"
-          className="bg-white p-6 rounded-xl shadow hover:shadow-lg border hover:border-blue-500 transition-all"
+          to="/freelancer/getPreposal"
+          className="relative bg-white p-6 rounded-xl shadow hover:shadow-lg border hover:border-blue-500 transition-all"
         >
+          {/* Count Badge */}
+          {proposalData?.count > 0 && (
+            <span className="absolute top-3 right-3 bg-red-600 text-white text-xs px-3 py-1 rounded-full">
+              {proposalData.count}
+            </span>
+          )}
+
           <h2 className="text-xl font-bold">Your Proposals</h2>
           <p className="text-gray-600 mt-2">
             Track your proposal status anytime.
@@ -39,7 +60,7 @@ const FreelancerHome = () => {
         </Link>
 
         <Link
-          to="/freelancer/profile"
+          to="/freelancer/getProfile"
           className="bg-white p-6 rounded-xl shadow hover:shadow-lg border hover:border-blue-500 transition-all"
         >
           <h2 className="text-xl font-bold">Your Profile</h2>
@@ -50,12 +71,14 @@ const FreelancerHome = () => {
       </div>
 
       <div className="overflow-hidden bg-black py-4 mt-5 ">
-        <CompanyLogos/>
+        <CompanyLogos />
       </div>
       <div>
-          <h1 className="text-white font-bold text-2xl flex justify-center">Featured Opportunities</h1>
+        <h1 className="text-white font-bold text-2xl flex justify-center">
+          Featured Opportunities
+        </h1>
       </div>
-         <FeaturedJobs/>
+      <FeaturedJobs />
     </div>
   );
 };

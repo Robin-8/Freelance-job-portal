@@ -16,7 +16,10 @@ const FreelanceRegister = () => {
 
   const onSubmit = async (formData) => {
     try {
-      const response = await axiosInstance.post("/freelancer/register", formData);
+      const response = await axiosInstance.post(
+        "/freelancer/register",
+        formData
+      );
       const { user, token } = response.data;
 
       dispatch(registerSuccess({ user, token }));
@@ -85,7 +88,7 @@ const FreelanceRegister = () => {
           </div>
 
           {/* Hidden Role */}
-          <input {...register("role")} value="client" type="hidden" />
+          <input {...register("role")} value="freelancer" type="hidden" />
 
           {/* Submit Button */}
           <button
