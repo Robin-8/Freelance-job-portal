@@ -20,6 +20,10 @@ const authFreelancer = async (req, res, next) => {
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
+    if (user.isBlocked) {
+  return res.status(403).json({ message: "Your account is blocked, contact support" });
+}
+
 
     req.user = user;
     next();

@@ -19,6 +19,11 @@ const authClient = async (req, res, next) => {
     const user = await clientModel.findById(decoded.id).select("-password");
 
     if (!user) return res.status(404).json({ message: "User not found" });
+    if (user.isBlocked) {
+      return res
+        .status(403)
+        .json({ message: "Your account is blocked, contact support" });
+    }
 
     req.user = user;
     next();
