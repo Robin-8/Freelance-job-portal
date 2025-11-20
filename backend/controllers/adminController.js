@@ -1,6 +1,7 @@
 const bcrypt =require('bcrypt')
 const adminModel =require('../model/clientModel');
 const { generateToken } = require('../jwt/jwt');
+const clientModel = require('../model/clientModel');
 
 
 
@@ -72,5 +73,25 @@ const login = async (req, res) => {
   }
 };
 
+const getClients = async (req, res) => {
+  try {
+    const clients = await User.find({ role: "client" });
 
-module.exports={register,login}
+    return res.status(200).json({
+      message: "All clients fetched",
+      clients,
+    });
+  } catch (error) {
+    return res.status(500).json({ message: "Server error", error });
+  }
+};
+
+const getFreelancers=async()=>{
+  try {
+    const freelancer = await clientModel.find({role:"freelancer"})
+    res.status(200).json({message:"All freelancer fetched",freelancer})
+  } catch (error) {
+      return res.status(500).json({ message: "Server error", error });
+  }
+}
+module.exports={register,login, getClients, getFreelancers}

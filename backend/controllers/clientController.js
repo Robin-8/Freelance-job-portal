@@ -78,21 +78,23 @@ const login = async (req, res) => {
 
 // ==================== ADD JOB ====================
 const addJob = async (req, res) => {
-  const { title, description, skillsRequired, budgetType, budget, deadline } =
+  const { title, description, skillsRequired, budgetType, budget, deadline, postedBy, place } =
     req.body;
 
   try {
-    if (!title || !description || !budget || !deadline) {
+
+    if (!title || !description || !budget || !deadline || !postedBy || !place) {
       return res
         .status(400)
-        .json({ message: "Please provide all required fields" });
+        .json({ message: "Please provide all required fields (title, description, budget, deadline, postedBy, place)." });
     }
+    
     if (!req.user || !req.user._id) {
       return res
         .status(401)
         .json({ message: "User not found or unauthorized" });
     }
- 
+  
     const newJob = await jobModel.create({
       title,
       description,
@@ -100,7 +102,8 @@ const addJob = async (req, res) => {
       budgetType,
       budget,
       deadline,
-      postedBy: req.user._id,
+      postedBy: postedBy, 
+      place: place,
     });
 
     return res

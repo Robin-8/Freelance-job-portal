@@ -3,7 +3,7 @@ const { generateToken } = require("../jwt/jwt");
 const User = require("../model/clientModel");
 const jobModel = require("../model/jobModel");
 const proposalModel = require("../model/proposalModel");
-const clientModel = require("../model/clientModel");
+
 
 const register = async (req, res) => {
   const { name, email, password, role } = req.body;
@@ -169,11 +169,11 @@ const getAllPreposals = async (req, res) => {
 };
 const updateProfile = async (req, res) => {
   try {
-    const { name, email, skills } = req.body;
+    const { name, email, password } = req.body;
 
     const update = await User.findByIdAndUpdate(
       req.user._id,
-      { name, email, skills },
+      { name, email, password },
       {
         new: true,
       }
@@ -203,4 +203,41 @@ const withdrawProposal = async(req,res)=>{
      return res.status(500).json({message:"internal server error",error})
   }
 }
-module.exports ={register, login, getJobs, applyJobs, getAllPreposals, updateProfile, withdrawProposal, getJobById};
+
+const getProfile = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id).select("-password");
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    return res.status(200).json({
+      message: "User profile fetched successfully",
+      user,
+    });
+
+  } catch (error) {
+    return res.status(500).json({
+      message: "Internal server error",
+      error: error.message,
+    });
+  }
+};
+
+const getPreposalCount = async (req, res) => {
+  try {
+    const count = await proposalModel.countDocuments({
+      freelancer: req.user._id,
+    });
+
+    return res.status(200).json({
+      message: "proposal count",
+      count,
+    });
+  } catch (error) {
+    return res.status(500).json({ message: "internal server error", error });
+  }
+};
+
+module.exports ={register, login, getJobs, applyJobs, getAllPreposals, updateProfile, getPreposalCount, withdrawProposal, getJobById, getProfile};
