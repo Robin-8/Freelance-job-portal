@@ -30,7 +30,7 @@ const AdminHome = () => {
 
         
         <Link
-          to="/admin/jobs"
+          to="/admin/getAdminJobs"
           className="group bg-gray-900 p-6 rounded-2xl shadow hover:shadow-xl transition"
         >
           <FileText className="w-10 h-10 text-green-400 group-hover:scale-110 transition" />
@@ -42,7 +42,7 @@ const AdminHome = () => {
 
         
         <Link
-          to="/admin/proposals"
+          to="/admin/getPreposals"
           className="group bg-gray-900 p-6 rounded-2xl shadow hover:shadow-xl transition"
         >
           <ClipboardList className="w-10 h-10 text-yellow-400 group-hover:scale-110 transition" />

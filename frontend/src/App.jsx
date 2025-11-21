@@ -18,6 +18,9 @@ import FreelanceUpdateProfile from "./freelancePages/FreelanceUpdateProfile";
 import FreelanceProfile from "./freelancePages/FreelanceProfile";
 import ClientRegister from "./clientPages/ClientRegister";
 import AdminMgtUsers from "./adminPages/AdminMgtUsers";
+import AdminGetAllJobs from "./adminPages/AdminGetAllJobs";
+import AdminGetPreposals from "./adminPages/AdminGetPreposals";
+import AdminEditJobs from "./adminPages/AdminEditJobs";
 
 
 
@@ -48,6 +51,9 @@ function App() {
           <Route path="/admin/login" element={<AdminLogin/>}/>
           <Route path="/admin/register" element={<AdminRegister/>}/>
           <Route path="/admin/userMgt" element={<AdminMgtUsers/>}/>
+          <Route path="/admin/getAdminJobs" element={<AdminGetAllJobs/>}/>
+          <Route path="/admin/getPreposals" element={<AdminGetPreposals/>}/>
+          <Route path="/admin/editJobs/:id" element={<AdminEditJobs/>}/>
           
         </Route>
       </Routes>
