@@ -2,6 +2,8 @@ const bcrypt = require("bcrypt");
 const adminModel = require("../model/clientModel");
 const { generateToken } = require("../jwt/jwt");
 const clientModel = require("../model/clientModel");
+const jobModel = require("../model/jobModel");
+const proposalModel = require("../model/proposalModel");
 
 const register = async (req, res) => {
   const { name, email, password, role } = req.body;
@@ -124,45 +126,126 @@ const blockUsers = async (req, res) => {
     );
 
     return res.status(200).json({
-      message: updatedUser.isBlocked ? "User blocked successfully" : "User unblocked successfully",
-      user: updatedUser
+      message: updatedUser.isBlocked
+        ? "User blocked successfully"
+        : "User unblocked successfully",
+      user: updatedUser,
     });
-
   } catch (error) {
     return res.status(500).json({ message: "Server error", error });
   }
 };
-const getJobs = async (req, res) => {
+
+const adminGetJobs = async (req, res) => {
   try {
-    const { skill, budget, sort, title } = req.query;
-    let filter = { isDeleted: false };
+    const jobs = await jobModel
+      .find({ isDeleted: false })
+      .populate("postedBy", "name email");
 
-    if (title) filter.title = { $regex: title, $options: "i" };
+    return res.status(200).json({
+      message: "All jobs fetched for admin",
+      jobs,
+    });
+  } catch (error) {
+    return res.status(500).json({ message: "Server error", error });
+  }
+};
+// ADMIN: Get all proposals on the platform
+const getAllProposalsAdmin = async (req, res) => {
+  try {
+    const proposals = await proposalModel
+      .find()
+      .populate("freelancer", "name email bidAmount")         
+      .populate("job", "title budget deadline postedBy")
+      .sort({ createdAt: -1 });
 
-    if (skill) filter.skillsRequired = { $regex: skill, $options: "i" };
-
-    if (budget) filter.budget = { $lte: Number(budget) };
-
-    let query = jobModel.find(filter);
-
-    if (sort === "latest") query = query.sort({ createdAt: -1 });
-    else if (sort === "oldest") query = query.sort({ createdAt: 1 });
-    else if (sort === "budget-high") query = query.sort({ budget: -1 });
-    else if (sort === "budget-low") query = query.sort({ budget: 1 });
-
-    const jobs = await query;
-
-    if (!jobs || jobs.length === 0) {
-      return res.status(404).json({ message: "No jobs found" });
+    if (proposals.length === 0) {
+      return res.status(404).json({ message: "No proposals found" });
     }
 
-    return res.status(200).json({ message: "Here is all jobs", jobs });
+    return res
+      .status(200)
+      .json({ message: "All proposals",  proposals: proposals || []});
+
   } catch (error) {
-    console.error(error);
-    return res.status(500).json({ message: "Internal server error" });
+    console.log(error);
+    return res.status(500).json({ message: "Internal server error", error });
+  }
+};
+
+const editJobs = async (req, res) => {
+  try {
+    const id = req.params.id;
+
+    const job = await jobModel
+      .findById(id)
+      .populate("postedBy", "name email");
+
+    if (!job) {
+      return res.status(404).json({ message: "Job not found" });
+    }
+
+    return res.status(200).json({ message: "Job found", job });
+  } catch (error) {
+    return res.status(500).json({ message: "Internal server error", error });
+  }
+};
+const updateJob = async (req, res) => {
+  try {
+    const id = req.params.id;
+
+    const updatedJob = await jobModel.findByIdAndUpdate(
+      id,
+      req.body,
+      { new: true }
+    );
+
+    if (!updatedJob) {
+      return res.status(404).json({ message: "Job not found" });
+    }
+
+    res.status(200).json({ message: "Job updated", job: updatedJob });
+  } catch (error) {
+    res.status(500).json({ message: "Internal server error", error });
+  }
+};
+
+const deleteJob = async (req, res) => {
+  try {
+    const id = req.params.id;
+
+    const job = await jobModel.findByIdAndUpdate(
+      id,
+      { isDeleted: true },
+      { new: true }
+    );
+
+    if (!job) {
+      return res.status(404).json({ message: "Job not found" });
+    }
+
+    return res.status(200).json({
+      message: "Job deleted successfully",
+      job,
+    });
+
+  } catch (error) {
+    return res.status(500).json({ message: "Internal server error", error });
   }
 };
 
 
 
-module.exports = { register, login, getUsers, deleteUsers, blockUsers, getJobs};
+
+module.exports = {
+  register,
+  login,
+  getUsers,
+  deleteUsers,
+  blockUsers,
+  adminGetJobs,
+  getAllProposalsAdmin,
+  editJobs,
+  updateJob,
+  deleteJob
+};

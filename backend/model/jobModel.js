@@ -43,7 +43,7 @@ const jobSchema = new Schema({
     },
      isDeleted: {
     type: Boolean,
-    default: false, // default means job is *not deleted*
+    default: false, 
   },
     status: {
         type: String,
