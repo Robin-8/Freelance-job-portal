@@ -21,6 +21,8 @@ import AdminMgtUsers from "./adminPages/AdminMgtUsers";
 import AdminGetAllJobs from "./adminPages/AdminGetAllJobs";
 import AdminGetPreposals from "./adminPages/AdminGetPreposals";
 import AdminEditJobs from "./adminPages/AdminEditJobs";
+import ClientGetJobs from "./clientPages/ClientGetJobs";
+import EditJobs from "./clientPages/EditJobs";
 
 
 
@@ -45,6 +47,8 @@ function App() {
           <Route path="/client/home" element={<ClientHome/>}/>
           <Route path="/client/preposal" element={<ProposalsReceived/>}/>
           <Route path="/client/addJob" element={<AddJob/>}/>
+          <Route path="/client/all" element={<ClientGetJobs/>}/>
+          <Route path="/client/editJobs/:id" element={<EditJobs/>}/>
 
           //Admin route
           <Route path="/admin/home" element={<AdminHome/>}/>

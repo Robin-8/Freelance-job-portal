@@ -19,7 +19,7 @@ const ClientHome = () => {
 
         {/* Post a Job */}
         <Link
-          to="/client/add-job"
+          to="/client/addJob"
           className="group bg-gray-900 p-6 rounded-2xl shadow hover:shadow-xl hover:bg-gray-850 transition duration-300 cursor-pointer"
         >
           <PlusCircle className="w-10 h-10 text-green-400 group-hover:scale-110 transition" />
@@ -31,7 +31,7 @@ const ClientHome = () => {
 
         {/* My Jobs */}
         <Link
-          to="/client/addJob"
+          to="/client/all"
           className="group bg-gray-900 p-6 rounded-2xl shadow hover:shadow-xl transition"
         >
           <Briefcase className="w-10 h-10 text-blue-400 group-hover:scale-110 transition" />
