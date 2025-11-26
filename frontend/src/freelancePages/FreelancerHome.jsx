@@ -1,13 +1,26 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Link } from "react-router-dom";
 import CompanyLogos from "../components/CompanyLogos";
 import FeaturedJobs from "./FeaturedJobs ";
 import { useSelector } from "react-redux";
 import { useQuery } from "@tanstack/react-query";
 import axiosInstance from "../api/axiosApi";
+import socket from "../socket";
 
 const FreelancerHome = () => {
-  const { token } = useSelector((state) => state.client);
+  const { token, user } = useSelector((state) => state.client);
+
+  useEffect(() => {
+    if (!user?._id) return;
+
+    socket.emit("join", {
+      userId: user._id,
+      role: "Freelancer",
+    });
+
+    console.log("Freelancer Joined socket room:", user._id);
+  }, [user]);
+
   const { data: proposalData } = useQuery({
     queryKey: ["proposalCount"],
     queryFn: async () => {
@@ -25,7 +38,7 @@ const FreelancerHome = () => {
         <h1 className="text-5xl font-bold flex justify-center">
           Welcome Freelancer 👋
         </h1>
-        <p className="mt-2  flex justify-center text-2xl">
+        <p className="mt-2 flex justify-center text-2xl">
           Find freelance jobs, submit proposals, and manage your profile.
         </p>
       </div>
@@ -70,7 +83,7 @@ const FreelancerHome = () => {
         </Link>
       </div>
 
-      <div className="overflow-hidden bg-black py-4 mt-5 ">
+      <div className="overflow-hidden bg-black py-4 mt-5">
         <CompanyLogos />
       </div>
       <div>

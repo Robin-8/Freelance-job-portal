@@ -1,11 +1,26 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Briefcase, PlusCircle, ClipboardList, Inbox } from "lucide-react";
+import { useSelector } from "react-redux";
+import socket from "../socket";
 
 const ClientHome = () => {
+  const { user } = useSelector((state) => state.client);
+
+  // Join socket room
+  useEffect(() => {
+    if (!user?._id) return;
+
+    socket.emit("join", {
+      userId: user._id,
+      role: "Client",
+    });
+
+    console.log("Client joined socket room:", user._id);
+  }, [user]);
+
   return (
     <div className="min-h-screen bg-gray-950 text-white px-6 py-10">
-
       {/* Header Section */}
       <div className="max-w-6xl mx-auto">
         <h1 className="text-4xl font-bold">Welcome Back 👋</h1>
@@ -16,7 +31,6 @@ const ClientHome = () => {
 
       {/* Actions (Cards Section) */}
       <div className="max-w-6xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-10">
-
         {/* Post a Job */}
         <Link
           to="/client/addJob"

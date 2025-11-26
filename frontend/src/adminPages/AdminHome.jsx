@@ -1,11 +1,24 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Users, FileText, ClipboardList, Settings } from "lucide-react";
+import { useSelector } from "react-redux";
+import socket from "../socket";
 
 const AdminHome = () => {
+  const { user } = useSelector((state) => state.client);
+
+  useEffect(() => {
+    if (user?._id) {
+      socket.emit("join", {
+        userId: user._id,
+        role: user.role,
+      });
+      console.log("Admin joined socket room");
+    }
+  }, [user]);
+
   return (
     <div className="min-h-screen bg-gray-950 text-white px-6 py-10">
-
       <div className="max-w-6xl mx-auto">
         <h1 className="text-4xl font-bold">Admin Dashboard ⚡</h1>
         <p className="text-gray-400 text-lg mt-2">
@@ -13,10 +26,7 @@ const AdminHome = () => {
         </p>
       </div>
 
-      
       <div className="max-w-6xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-10">
-
-        
         <Link
           to="/admin/userMgt"
           className="group bg-gray-900 p-6 rounded-2xl shadow hover:shadow-xl hover:bg-gray-850 transition duration-300 cursor-pointer"
@@ -28,7 +38,6 @@ const AdminHome = () => {
           </p>
         </Link>
 
-        
         <Link
           to="/admin/getAdminJobs"
           className="group bg-gray-900 p-6 rounded-2xl shadow hover:shadow-xl transition"
@@ -40,7 +49,6 @@ const AdminHome = () => {
           </p>
         </Link>
 
-        
         <Link
           to="/admin/getPreposals"
           className="group bg-gray-900 p-6 rounded-2xl shadow hover:shadow-xl transition"
@@ -52,7 +60,6 @@ const AdminHome = () => {
           </p>
         </Link>
 
-        
         <Link
           to="/admin/settings"
           className="group bg-gray-900 p-6 rounded-2xl shadow hover:shadow-xl transition"
@@ -65,10 +72,8 @@ const AdminHome = () => {
         </Link>
       </div>
 
-     
       <div className="max-w-6xl mx-auto mt-16">
         <h3 className="text-2xl font-semibold mb-6">Recent Activity</h3>
-
         <div className="bg-gray-900 rounded-2xl p-6 shadow">
           <p className="text-gray-400">No recent admin actions yet.</p>
         </div>

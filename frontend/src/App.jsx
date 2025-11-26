@@ -23,42 +23,75 @@ import AdminGetPreposals from "./adminPages/AdminGetPreposals";
 import AdminEditJobs from "./adminPages/AdminEditJobs";
 import ClientGetJobs from "./clientPages/ClientGetJobs";
 import EditJobs from "./clientPages/EditJobs";
-
-
+import { useSelector } from "react-redux";
+import { useEffect } from "react";
+import socket from "./socket";
+import ChatBox from "./chat/ChatBox";
+import ChatPage from "./chat/ChatPage";
 
 function App() {
+  const { user } = useSelector((state) => state.client);
+
+  useEffect(() => {
+    if (user) {
+      // Handle both old format (id) and new format (_id)
+      const userId = user._id || user.id;
+
+      if (userId) {
+        socket.emit("join", {
+          userId: userId,
+          role: user.role,
+        });
+
+        console.log("Joined socket with:", userId);
+      }
+    }
+  }, [user]);
   return (
     <>
       <Routes>
         <Route element={<Layout />}>
-        // Route for freelancer
+          // Route for freelancer
           <Route path="/freelancer/register" element={<FreelanceRegister />} />
-          <Route path="/freelancer/login" element={<FreelanceLogin/>}/>
-          <Route path="/freelancer/freelancerHome" element={<FreelancerHome/>}/>
-          <Route path="/freelancer/searchJobs" element={<FreelancerSearch/>}/>
-          <Route path="/freelancer/applyJob/:id" element={<FreelanceJobDetails />} />
-          <Route path="/freelancer/getPreposal" element={<FreelancerSentProposals/>}/>
-          <Route path="/freelancer/updateProfile" element={<FreelanceUpdateProfile/>}/>
-          <Route path="/freelancer/getProfile" element={<FreelanceProfile/>}/>
-
-          // Route for clients 
-          <Route path="/client/register" element={<ClientRegister/>}/>
-          <Route path="/client/login" element={<ClientLogin/>}/>
-          <Route path="/client/home" element={<ClientHome/>}/>
-          <Route path="/client/preposal" element={<ProposalsReceived/>}/>
-          <Route path="/client/addJob" element={<AddJob/>}/>
-          <Route path="/client/all" element={<ClientGetJobs/>}/>
-          <Route path="/client/editJobs/:id" element={<EditJobs/>}/>
-
+          <Route path="/freelancer/login" element={<FreelanceLogin />} />
+          <Route
+            path="/freelancer/freelancerHome"
+            element={<FreelancerHome />}
+          />
+          <Route path="/freelancer/searchJobs" element={<FreelancerSearch />} />
+          <Route
+            path="/freelancer/applyJob/:id"
+            element={<FreelanceJobDetails />}
+          />
+          <Route
+            path="/freelancer/getPreposal"
+            element={<FreelancerSentProposals />}
+          />
+          <Route
+            path="/freelancer/updateProfile"
+            element={<FreelanceUpdateProfile />}
+          />
+          <Route path="/freelancer/getProfile" element={<FreelanceProfile />} />
+          // Route for clients
+          <Route path="/client/register" element={<ClientRegister />} />
+          <Route path="/client/login" element={<ClientLogin />} />
+          <Route path="/client/home" element={<ClientHome />} />
+          <Route path="/client/preposal" element={<ProposalsReceived />} />
+          <Route path="/client/addJob" element={<AddJob />} />
+          <Route path="/client/all" element={<ClientGetJobs />} />
+          <Route path="/client/editJobs/:id" element={<EditJobs />} />
           //Admin route
-          <Route path="/admin/home" element={<AdminHome/>}/>
-          <Route path="/admin/login" element={<AdminLogin/>}/>
-          <Route path="/admin/register" element={<AdminRegister/>}/>
-          <Route path="/admin/userMgt" element={<AdminMgtUsers/>}/>
-          <Route path="/admin/getAdminJobs" element={<AdminGetAllJobs/>}/>
-          <Route path="/admin/getPreposals" element={<AdminGetPreposals/>}/>
-          <Route path="/admin/editJobs/:id" element={<AdminEditJobs/>}/>
-          
+          <Route path="/admin/home" element={<AdminHome />} />
+          <Route path="/admin/login" element={<AdminLogin />} />
+          <Route path="/admin/register" element={<AdminRegister />} />
+          <Route path="/admin/userMgt" element={<AdminMgtUsers />} />
+          <Route path="/admin/getAdminJobs" element={<AdminGetAllJobs />} />
+          <Route path="/admin/getPreposals" element={<AdminGetPreposals />} />
+          <Route path="/admin/editJobs/:id" element={<AdminEditJobs />} />
+          //Chat route
+          <Route path="/freelancer/chat" element={<ChatPage />} />
+          <Route path="/admin/chat" element={<ChatPage />} />
+          <Route path="/chatPage" element={<ChatPage />} />
         </Route>
       </Routes>
     </>

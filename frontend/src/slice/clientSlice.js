@@ -1,11 +1,26 @@
 import { createSlice } from "@reduxjs/toolkit";
 
-const userInfo = localStorage.getItem("userInfo")
-  ? JSON.parse(localStorage.getItem("userInfo"))
-  : null;
-const token = localStorage.getItem("token")
-  ? localStorage.getItem("token")
-  : null;
+// Helper to get user from localStorage and ensure proper format
+const getUserFromStorage = () => {
+  try {
+    const userInfo = localStorage.getItem("userInfo");
+    if (userInfo) {
+      const user = JSON.parse(userInfo);
+      // Ensure _id is set (handle both old and new formats)
+      if (user.id && !user._id) {
+        user._id = user.id;
+      }
+      return user;
+    }
+  } catch (error) {
+    console.error("Error parsing user from localStorage:", error);
+    localStorage.removeItem("userInfo");
+  }
+  return null;
+};
+
+const userInfo = getUserFromStorage();
+const token = localStorage.getItem("token") || null;
 
 const clientSlice = createSlice({
   name: "client",
