@@ -63,7 +63,7 @@ const login = async (req, res) => {
     return res.status(200).json({
       message: "Login successful",
       user: {
-        id: userExisting._id,
+        _id: userExisting._id,
         name: userExisting.name,
         email: userExisting.email,
         role: userExisting.role,
@@ -78,23 +78,33 @@ const login = async (req, res) => {
 
 // ==================== ADD JOB ====================
 const addJob = async (req, res) => {
-  const { title, description, skillsRequired, budgetType, budget, deadline, postedBy, place } =
-    req.body;
+  const {
+    title,
+    description,
+    skillsRequired,
+    budgetType,
+    budget,
+    deadline,
+    postedBy,
+    place,
+  } = req.body;
 
   try {
-
     if (!title || !description || !budget || !deadline || !postedBy || !place) {
       return res
         .status(400)
-        .json({ message: "Please provide all required fields (title, description, budget, deadline, postedBy, place)." });
+        .json({
+          message:
+            "Please provide all required fields (title, description, budget, deadline, postedBy, place).",
+        });
     }
-    
+
     if (!req.user || !req.user._id) {
       return res
         .status(401)
         .json({ message: "User not found or unauthorized" });
     }
-  
+
     const newJob = await jobModel.create({
       title,
       description,
@@ -102,7 +112,7 @@ const addJob = async (req, res) => {
       budgetType,
       budget,
       deadline,
-      postedBy: postedBy, 
+      postedBy: postedBy,
       place: place,
     });
 
@@ -117,16 +127,12 @@ const addJob = async (req, res) => {
 
 const updateJob = async (req, res) => {
   const { id } = req.params;
-  const { title, description, skillsRequired, budgetType, budget, deadline } =
-    req.body;
+  const { title, description, skillsRequired } = req.body;
 
   const updatedJobData = {
     title,
     description,
     skillsRequired,
-    budgetType,
-    budget,
-    deadline,
   };
 
   try {
@@ -166,7 +172,7 @@ const deleteJob = async (req, res) => {
 const getAllJobs = async (req, res) => {
   try {
     const jobs = await jobModel.find({ isDeleted: false });
-    res.status(200).json(jobs);
+    res.status(200).json({ jobs });
   } catch (error) {
     console.error("Error fetching jobs:", error);
     res.status(500).json({ message: "Internal server error" });
@@ -202,7 +208,7 @@ const proposalReceived = async (req, res) => {
 const proposalStatus = async (req, res) => {
   const { preposalId } = req.params;
   const { status } = req.body;
-  
+
   try {
     if (!["pending", "accepted", "rejected"].includes(status)) {
       return res.status(401).json({ message: "Preposal not found" });
@@ -216,14 +222,24 @@ const proposalStatus = async (req, res) => {
     if (!updatePreposal) {
       return res.status(401).json({ message: "perposal not found" });
     }
-    return res
-      .status(200)
-      .json({
-        message: `Proposal status updated to ${status}`,
-        preposal: updatePreposal,
-      });
+    return res.status(200).json({
+      message: `Proposal status updated to ${status}`,
+      preposal: updatePreposal,
+    });
   } catch (error) {
-     res.status(500).json({ message: error.message });
+    res.status(500).json({ message: error.message });
+  }
+};
+const editJobs = async (req, res) => {
+  try {
+    const id = req.params.id;
+    const jobs = await jobModel.findByIdAndUpdate(id, req.body, { new: true });
+    if (!jobs) {
+      return res.status(400).json({ message: "Job not found" });
+    }
+    return res.status(200).json({ message: "Job updated successfully", jobs });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
   }
 };
 
@@ -235,5 +251,6 @@ module.exports = {
   getAllJobs,
   deleteJob,
   proposalReceived,
-  proposalStatus
+  proposalStatus,
+  editJobs,
 };

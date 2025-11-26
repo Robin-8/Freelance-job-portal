@@ -37,7 +37,7 @@ const jobSchema = new Schema({
         required:true,
     },
     postedBy: {
-        type: Schema.Types.ObjectId, // Links to the Client who posted the job
+        type: Schema.Types.ObjectId, 
         ref: 'User',
         required: true,
     },

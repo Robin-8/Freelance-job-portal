@@ -60,7 +60,7 @@ const login = async (req, res) => {
     return res.status(200).json({
       message: "Login successful",
       user: {
-        id: adminExisting._id,
+        _id: adminExisting._id,
         name: adminExisting.name,
         email: adminExisting.email,
         role: adminExisting.role,
@@ -83,6 +83,21 @@ const getUsers = async (req, res) => {
     });
   } catch (error) {
     return res.status(500).json({ message: "Server error", error });
+  }
+};
+
+// Fetch all admins (exclude password)
+const getAllAdmins = async (req, res) => {
+  try {
+    const admins = await adminModel.find().select("-password");
+    return res.status(200).json({
+      success: true,
+      admins,
+    });
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ success: false, message: "Server error", error });
   }
 };
 
@@ -155,7 +170,7 @@ const getAllProposalsAdmin = async (req, res) => {
   try {
     const proposals = await proposalModel
       .find()
-      .populate("freelancer", "name email bidAmount")         
+      .populate("freelancer", "name email bidAmount")
       .populate("job", "title budget deadline postedBy")
       .sort({ createdAt: -1 });
 
@@ -165,8 +180,7 @@ const getAllProposalsAdmin = async (req, res) => {
 
     return res
       .status(200)
-      .json({ message: "All proposals",  proposals: proposals || []});
-
+      .json({ message: "All proposals", proposals: proposals || [] });
   } catch (error) {
     console.log(error);
     return res.status(500).json({ message: "Internal server error", error });
@@ -177,9 +191,7 @@ const editJobs = async (req, res) => {
   try {
     const id = req.params.id;
 
-    const job = await jobModel
-      .findById(id)
-      .populate("postedBy", "name email");
+    const job = await jobModel.findById(id).populate("postedBy", "name email");
 
     if (!job) {
       return res.status(404).json({ message: "Job not found" });
@@ -194,11 +206,9 @@ const updateJob = async (req, res) => {
   try {
     const id = req.params.id;
 
-    const updatedJob = await jobModel.findByIdAndUpdate(
-      id,
-      req.body,
-      { new: true }
-    );
+    const updatedJob = await jobModel.findByIdAndUpdate(id, req.body, {
+      new: true,
+    });
 
     if (!updatedJob) {
       return res.status(404).json({ message: "Job not found" });
@@ -228,14 +238,10 @@ const deleteJob = async (req, res) => {
       message: "Job deleted successfully",
       job,
     });
-
   } catch (error) {
     return res.status(500).json({ message: "Internal server error", error });
   }
 };
-
-
-
 
 module.exports = {
   register,
@@ -247,5 +253,6 @@ module.exports = {
   getAllProposalsAdmin,
   editJobs,
   updateJob,
-  deleteJob
+  deleteJob,
+  getAllAdmins,
 };

@@ -4,7 +4,6 @@ const User = require("../model/clientModel");
 const jobModel = require("../model/jobModel");
 const proposalModel = require("../model/proposalModel");
 
-
 const register = async (req, res) => {
   const { name, email, password, role } = req.body;
 
@@ -59,7 +58,7 @@ const login = async (req, res) => {
     return res.status(200).json({
       message: "Login successful",
       user: {
-        id: existingUser._id,
+        _id: existingUser._id,
         name: existingUser.name,
         email: existingUser.email,
         role: existingUser.role,
@@ -72,7 +71,7 @@ const login = async (req, res) => {
   }
 };
 const getJobById = async (req, res) => {
-  const {id}=req.params
+  const { id } = req.params;
   try {
     const job = await jobModel.findById(id);
 
@@ -135,10 +134,7 @@ const applyJobs = async (req, res) => {
     });
 
     // Increment proposal count WITHOUT re-validating the job
-    await jobModel.updateOne(
-      { _id: id },
-      { $inc: { proposalsCount: 1 } }
-    );
+    await jobModel.updateOne({ _id: id }, { $inc: { proposalsCount: 1 } });
 
     return res.status(200).json({
       message: "Applied successfully",
@@ -149,7 +145,6 @@ const applyJobs = async (req, res) => {
     return res.status(500).json({ message: "Internal server error" });
   }
 };
-
 
 const getAllPreposals = async (req, res) => {
   try {
@@ -178,31 +173,35 @@ const updateProfile = async (req, res) => {
         new: true,
       }
     );
-    if(!update){
-      return res.status(401).json({message:"no user found with this id"})
+    if (!update) {
+      return res.status(401).json({ message: "no user found with this id" });
     }
-    return res.status(200).json({message:"user updated successfully",update})
+    return res
+      .status(200)
+      .json({ message: "user updated successfully", update });
   } catch (error) {
-    return res.status(500).json({message:"internal server error",error})
+    return res.status(500).json({ message: "internal server error", error });
   }
 };
 
-const withdrawProposal = async(req,res)=>{
-  const {proposalId}=req.params
+const withdrawProposal = async (req, res) => {
+  const { proposalId } = req.params;
   try {
     const preposal = await proposalModel.findOne({
       _id: proposalId,
-      freelancer: req.user._id
+      freelancer: req.user._id,
     });
-    if(!preposal){
-      return res.status(201).json({message:"no job found"})
+    if (!preposal) {
+      return res.status(201).json({ message: "no job found" });
     }
-    await preposal.deleteOne()
-    return res.status(200).json({message:"job preposal deleted successfully"})
+    await preposal.deleteOne();
+    return res
+      .status(200)
+      .json({ message: "job preposal deleted successfully" });
   } catch (error) {
-     return res.status(500).json({message:"internal server error",error})
+    return res.status(500).json({ message: "internal server error", error });
   }
-}
+};
 
 const getProfile = async (req, res) => {
   try {
@@ -216,7 +215,6 @@ const getProfile = async (req, res) => {
       message: "User profile fetched successfully",
       user,
     });
-
   } catch (error) {
     return res.status(500).json({
       message: "Internal server error",
@@ -240,4 +238,28 @@ const getPreposalCount = async (req, res) => {
   }
 };
 
-module.exports ={register, login, getJobs, applyJobs, getAllPreposals, updateProfile, getPreposalCount, withdrawProposal, getJobById, getProfile};
+const jobEditing = async (req, res) => {
+  try {
+    const id = req.params.id;
+    const jobs = await jobModel.findByIdAndUpdate(id, req.body, { new: true });
+    if (!jobs) {
+      return res.status(400).json({ message: "No jobs are founded" });
+    }
+    return res.status(200).json({ message: "Job edited successfully", jobs });
+  } catch (error) {
+    return res.status(500).json({ message: "internal server error", error });
+  }
+};
+
+module.exports = {
+  register,
+  login,
+  getJobs,
+  applyJobs,
+  getAllPreposals,
+  updateProfile,
+  getPreposalCount,
+  withdrawProposal,
+  getJobById,
+  getProfile,
+};
