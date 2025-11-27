@@ -9,6 +9,7 @@ const clientRoute = require("./routes/clientRoute");
 const adminRoute = require("./routes/adminRoute");
 const freeLanceRoute = require("./routes/freeLanceRoute");
 const chatRoutes = require("./routes/chatRoute");
+const paymentRoutes =require('./routes/paymentRoute')
 
 const app = express();
 
@@ -82,6 +83,7 @@ app.use("/api/client", clientRoute);
 app.use("/api/admin", adminRoute);
 app.use("/api/freelancer", freeLanceRoute);
 app.use("/api/chat", chatRoutes);
+app.use('/api/payment',paymentRoutes)
 
 // CONNECT DB
 connectDb();
