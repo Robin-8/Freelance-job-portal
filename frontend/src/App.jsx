@@ -28,6 +28,7 @@ import { useEffect } from "react";
 import socket from "./socket";
 import ChatBox from "./chat/ChatBox";
 import ChatPage from "./chat/ChatPage";
+import Payment from "./payment/Payment";
 
 function App() {
   const { user } = useSelector((state) => state.client);
@@ -80,6 +81,7 @@ function App() {
           <Route path="/client/addJob" element={<AddJob />} />
           <Route path="/client/all" element={<ClientGetJobs />} />
           <Route path="/client/editJobs/:id" element={<EditJobs />} />
+          <Route path="/client/payment" element={<Payment/>}/>
           //Admin route
           <Route path="/admin/home" element={<AdminHome />} />
           <Route path="/admin/login" element={<AdminLogin />} />
@@ -92,6 +94,7 @@ function App() {
           <Route path="/freelancer/chat" element={<ChatPage />} />
           <Route path="/admin/chat" element={<ChatPage />} />
           <Route path="/chatPage" element={<ChatPage />} />
+
         </Route>
       </Routes>
     </>

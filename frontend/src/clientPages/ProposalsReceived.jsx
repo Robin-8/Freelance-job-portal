@@ -1,11 +1,15 @@
 import React from "react";
 import { User, FileText, Clock, IndianRupee } from "lucide-react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import axiosInstance from "../api/axiosApi";
+import { useNavigate } from "react-router-dom";
 
 const ProposalsReceived = () => {
   const queryClient = useQueryClient();
-  const { data, isLoading, isError, error } = useQuery({
+  const navigate = useNavigate();
+
+  // Fetch proposals
+  const { data, isLoading, error } = useQuery({
     queryKey: ["proposalsReceived"],
     queryFn: async () => {
       const res = await axiosInstance.get("/client/preposal");
@@ -15,24 +19,32 @@ const ProposalsReceived = () => {
 
   const proposals = data?.preposal || [];
 
+  // Mutation to update proposal status
   const updateMutation = useMutation({
     mutationFn: async ({ preposalId, status }) => {
-      const response = await axiosInstance.patch(
-        `/client/updateStatus/${preposalId}`,
-        { status }
-      );
-      return response.data;
+      const res = await axiosInstance.patch(`/client/updateStatus/${preposalId}`, { status });
+      return res.data;
     },
-    onSuccess:()=>{
-       queryClient.invalidateQueries(['proposalsReceived'])
-    }
+    onSuccess: (data, variables) => {
+      // Refresh proposals
+      queryClient.invalidateQueries(["proposalsReceived"]);
+
+      // If accepted, navigate to payment page with amount & proposal ID
+      if (variables.status === "accepted") {
+        const proposal = proposals.find((p) => p._id === variables.preposalId);
+        navigate("/client/payment", {
+          state: { preposalId: variables.preposalId, amount: proposal.bidAmount },
+        });
+      }
+    },
   });
-    if (isLoading) return <p>loading......</p>;
-  if (error) return <p>Error loading preposals</p>;
+
+  if (isLoading) return <p className="text-white text-center mt-10">Loading proposals...</p>;
+  if (error) return <p className="text-red-500 text-center mt-10">Error loading proposals</p>;
 
   return (
     <div className="min-h-screen bg-gray-950 text-white px-6 py-10">
-      {/* Page Header */}
+      {/* Header */}
       <div className="max-w-6xl mx-auto mb-10">
         <h1 className="text-3xl font-bold">Proposals Received</h1>
         <p className="text-gray-400 mt-1 text-lg">
@@ -40,30 +52,25 @@ const ProposalsReceived = () => {
         </p>
       </div>
 
-      {/* If No Proposals */}
       {proposals.length === 0 ? (
         <div className="max-w-4xl mx-auto bg-gray-900 p-10 rounded-2xl text-center border border-gray-800">
           <p className="text-gray-400 text-lg">No proposals received yet.</p>
         </div>
       ) : (
         <div className="max-w-6xl mx-auto grid grid-cols-1 gap-6">
-          {proposals.map((p, index) => (
+          {proposals.map((p) => (
             <div
-              key={index}
+              key={p._id}
               className="bg-gray-900 p-6 rounded-2xl border border-gray-800 hover:border-gray-700 hover:shadow-xl transition-all"
             >
-              {/* Top Row */}
+              {/* Job Info */}
               <div className="flex justify-between items-start">
                 <div>
-                  <h2 className="text-xl font-semibold text-white">
-                    {p.job?.title}
-                  </h2>
+                  <h2 className="text-xl font-semibold">{p.job?.title}</h2>
                   <p className="text-sm text-gray-400 mt-1 flex items-center gap-1">
-                    <Clock size={16} /> Submitted:{" "}
-                    {new Date(p.createdAt).toLocaleDateString()}
+                    <Clock size={16} /> Submitted: {new Date(p.createdAt).toLocaleDateString()}
                   </p>
                 </div>
-
                 <p className="flex items-center gap-1 text-green-400 font-semibold">
                   <IndianRupee size={18} /> {p.bidAmount}
                 </p>
@@ -75,9 +82,7 @@ const ProposalsReceived = () => {
                   <User size={24} className="text-gray-400" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-semibold">
-                    {p.freelancer?.name}
-                  </h3>
+                  <h3 className="text-lg font-semibold">{p.freelancer?.name}</h3>
                   <p className="text-gray-400 text-sm">{p.freelancer?.email}</p>
                 </div>
               </div>
@@ -87,18 +92,28 @@ const ProposalsReceived = () => {
                 <h4 className="font-semibold text-white flex items-center gap-2">
                   <FileText size={18} /> Cover Letter
                 </h4>
-                <p className="text-gray-300 mt-2 text-sm leading-relaxed">
-                  {p.coverLetter}
-                </p>
+                <p className="text-gray-300 mt-2 text-sm leading-relaxed">{p.coverLetter}</p>
               </div>
 
               {/* Action Buttons */}
               <div className="mt-6 flex gap-4">
-                <button onClick={()=>updateMutation.mutate({preposalId:p._id, status:'accepted'})} className="flex-1 bg-green-600 py-3 rounded-xl text-white font-semibold hover:bg-green-700 transition">
+                {/* Accept */}
+                <button
+                  onClick={() =>
+                    updateMutation.mutate({ preposalId: p._id, status: "accepted" })
+                  }
+                  className="flex-1 bg-green-600 py-3 rounded-xl text-white font-semibold hover:bg-green-700 transition"
+                >
                   Accept Proposal
                 </button>
 
-                <button onClick={()=>updateMutation.mutate({preposalId:p._id, status:'rejected'})} className="flex-1 bg-red-600 py-3 rounded-xl text-white font-semibold hover:bg-red-700 transition">
+                {/* Reject */}
+                <button
+                  onClick={() =>
+                    updateMutation.mutate({ preposalId: p._id, status: "rejected" })
+                  }
+                  className="flex-1 bg-red-600 py-3 rounded-xl text-white font-semibold hover:bg-red-700 transition"
+                >
                   Reject Proposal
                 </button>
               </div>

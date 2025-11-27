@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Users, FileText, ClipboardList, Settings } from "lucide-react";
+import { Users, FileText, ClipboardList, Settings, Inbox } from "lucide-react";
 import { useSelector } from "react-redux";
 import socket from "../socket";
 
@@ -61,13 +61,13 @@ const AdminHome = () => {
         </Link>
 
         <Link
-          to="/admin/settings"
+          to="/admin/chat"
           className="group bg-gray-900 p-6 rounded-2xl shadow hover:shadow-xl transition"
         >
-          <Settings className="w-10 h-10 text-purple-400 group-hover:scale-110 transition" />
-          <h2 className="text-xl font-semibold mt-4">System Settings</h2>
+          <Inbox className="w-10 h-10 text-purple-400 group-hover:scale-110 transition" />
+          <h2 className="text-xl font-semibold mt-4">Messages</h2>
           <p className="text-gray-400 mt-2 text-sm">
-            Configure platform-wide settings.
+            Chat with freelancers in real time.
           </p>
         </Link>
       </div>

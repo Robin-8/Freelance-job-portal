@@ -21,25 +21,25 @@ const ClientGetJobs = () => {
   // LOADING UI
   if (isLoading)
     return (
-      <div className="flex justify-center items-center h-screen bg-gray-50">
-        <Loader2 className="h-10 w-10 animate-spin text-blue-600" />
+      <div className="flex justify-center items-center h-screen bg-[#0d0d0d]">
+        <Loader2 className="h-10 w-10 animate-spin text-blue-400" />
       </div>
     );
 
   // ERROR UI
   if (isError)
     return (
-      <div className="flex justify-center items-center h-screen bg-gray-50">
-        <p className="text-red-600 text-lg font-semibold">
+      <div className="flex justify-center items-center h-screen bg-[#0d0d0d]">
+        <p className="text-red-400 text-lg font-semibold">
           Something went wrong. Please try again.
         </p>
       </div>
     );
 
   return (
-    <div className="p-8 bg-gray-100 min-h-screen">
-      <h1 className="text-4xl font-bold text-gray-800 mb-10 text-center flex items-center justify-center gap-3">
-        <Briefcase className="h-8 w-8 text-blue-600" />
+    <div className="p-8 bg-[#0d0d0d] min-h-screen">
+      <h1 className="text-4xl font-bold text-gray-100 mb-10 text-center flex items-center justify-center gap-3">
+        <Briefcase className="h-8 w-8 text-blue-400" />
         Available Jobs
       </h1>
 
@@ -48,16 +48,18 @@ const ClientGetJobs = () => {
         {data?.map((job) => (
           <div
             key={job._id}
-            className="bg-white rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 p-6 border border-gray-200 hover:scale-[1.02]"
+            className="bg-[#1a1a1a] rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 p-6 border border-gray-800 hover:scale-[1.02]"
           >
-            <h2 className="text-2xl font-bold text-gray-900 mb-3">
+            <h2 className="text-2xl font-bold text-gray-100 mb-3">
               {job.title}
             </h2>
 
-            <p className="text-gray-600 line-clamp-3 mb-4">{job.description}</p>
+            <p className="text-gray-400 line-clamp-3 mb-4">
+              {job.description}
+            </p>
 
             <div className="mb-4">
-              <p className="text-sm text-gray-700 font-semibold">
+              <p className="text-sm text-gray-300 font-semibold">
                 Skills Required:
               </p>
               <div className="flex flex-wrap gap-2 mt-2">
@@ -65,7 +67,7 @@ const ClientGetJobs = () => {
                   job.skillsRequired.map((skill, index) => (
                     <span
                       key={index}
-                      className="bg-blue-100 text-blue-700 text-xs px-3 py-1 rounded-full"
+                      className="bg-blue-900/40 text-blue-300 text-xs px-3 py-1 rounded-full border border-blue-800"
                     >
                       {skill}
                     </span>
@@ -79,7 +81,7 @@ const ClientGetJobs = () => {
             </div>
 
             <Link to={`/client/editJobs/${job._id}`}>
-              <button className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white py-2.5 rounded-xl font-semibold transition-all">
+              <button className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white py-2.5 rounded-xl font-semibold transition-all shadow-md hover:shadow-blue-600/40">
                 View Details
                 <ArrowRight className="h-4 w-4" />
               </button>

@@ -20,13 +20,11 @@ const AdminEditJobs = () => {
     },
   });
 
-
   const [form, setForm] = useState({
     title: "",
     description: "",
     budget: "",
   });
-
 
   if (data && form.title === "") {
     setForm({
@@ -36,12 +34,10 @@ const AdminEditJobs = () => {
     });
   }
 
-
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  
   const mutation = useMutation({
     mutationFn: async () => {
       const res = await axiosInstance.put(
@@ -64,67 +60,76 @@ const AdminEditJobs = () => {
     mutation.mutate();
   };
 
+  // ---------------- Loading Spinner ----------------
   if (isLoading)
     return (
       <div className="flex justify-center items-center h-[60vh]">
-        <div className="h-10 w-10 animate-spin border-4 border-blue-500 border-t-transparent rounded-full"></div>
+        <div className="h-10 w-10 animate-spin border-4 border-indigo-500 border-t-transparent rounded-full"></div>
       </div>
     );
 
+  // ---------------- Error ----------------
   if (isError)
     return (
-      <p className="text-center text-red-600 mt-10">
+      <p className="text-center text-red-400 mt-10">
         {error?.response?.data?.message || "Something went wrong"}
       </p>
     );
 
   return (
-    <div className="max-w-3xl mx-auto bg-white p-8 mt-10 shadow-lg rounded-xl">
-      <h1 className="text-3xl font-bold mb-6 text-gray-800">
-        Edit Job – {form.title}
+    <div className="max-w-3xl mx-auto bg-[#121417] p-10 mt-12 shadow-xl rounded-2xl border border-[#1f232a] text-gray-200">
+      
+      <h1 className="text-3xl font-bold mb-8 text-white tracking-tight">
+        Edit Job – <span className="text-indigo-400">{form.title}</span>
       </h1>
 
-      <form onSubmit={handleSubmit} className="space-y-5">
-  
+      <form onSubmit={handleSubmit} className="space-y-6">
+
+        {/* Job Title */}
         <div>
-          <label className="block font-semibold mb-1 text-gray-700">Job Title</label>
+          <label className="block mb-1 text-gray-400 font-medium">Job Title</label>
           <input
             type="text"
             name="title"
             value={form.title}
             onChange={handleChange}
-            className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500"
+            className="w-full p-3 bg-[#1a1d22] border border-[#2b3039] rounded-lg
+                       text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
           />
         </div>
 
-       
+        {/* Description */}
         <div>
-          <label className="block font-semibold mb-1 text-gray-700">Description</label>
+          <label className="block mb-1 text-gray-400 font-medium">Description</label>
           <textarea
             name="description"
             value={form.description}
             onChange={handleChange}
-            className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 h-32"
+            className="w-full h-32 p-3 bg-[#1a1d22] border border-[#2b3039] rounded-lg
+                       text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
           ></textarea>
         </div>
 
+        {/* Budget */}
         <div>
-          <label className="block font-semibold mb-1 text-gray-700">Budget</label>
+          <label className="block mb-1 text-gray-400 font-medium">Budget</label>
           <input
             type="number"
             name="budget"
             value={form.budget}
             onChange={handleChange}
-            className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500"
+            className="w-full p-3 bg-[#1a1d22] border border-[#2b3039] rounded-lg
+                       text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
           />
         </div>
 
-        
-        <div className="flex justify-end">
+        {/* Submit Button */}
+        <div className="flex justify-end pt-4">
           <button
             type="submit"
             disabled={mutation.isPending}
-            className="px-6 py-3 bg-blue-600 text-white rounded-xl shadow-lg hover:bg-blue-700 transition"
+            className="px-8 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl
+                       shadow-lg transition-all disabled:opacity-60"
           >
             {mutation.isPending ? "Updating..." : "Update Job"}
           </button>
