@@ -3,9 +3,12 @@ const { generateToken } = require("../jwt/jwt");
 const User = require("../model/clientModel");
 const jobModel = require("../model/jobModel");
 const proposalModel = require("../model/proposalModel");
+const imagekit = require("../utils/imagekit"); 
 
 const register = async (req, res) => {
-  const { name, email, password, role } = req.body;
+  const { name, email, password } = req.body;
+  const file = req.file; 
+  console.log(file,'file here')
 
   try {
     const existingUser = await User.findOne({ email });
@@ -15,27 +18,61 @@ const register = async (req, res) => {
         .json({ message: "Freelance already registered with this email" });
     }
 
+    // 1. Initialize profileImageUrl with the default placeholder
+    let profileImageUrl = "https://via.placeholder.com/150?text=Profile";
+
+    // 2. CHECK FOR FILE and UPLOAD to ImageKit
+    if (file) {
+      try {
+        // Convert the file buffer to Base64 string, as required by ImageKit SDK
+        const base64File = file.buffer.toString('base64');
+        const fileName = `${name}_${Date.now()}`; // Create a unique file name
+
+        const uploadResult = await imagekit.upload({
+          file: base64File,
+          fileName: fileName,
+          folder: "/freelancer-profiles", // The virtual folder in your ImageKit dashboard
+          useUniqueFileName: true,
+        });
+
+        // Use the URL returned by ImageKit for the user's profile
+        profileImageUrl = uploadResult.url; 
+        console.log("Image successfully uploaded to:", profileImageUrl);
+
+      } catch (uploadError) {
+        console.error("ImageKit Upload Error:", uploadError);
+        // If upload fails (e.g., bad key, network issue), we fall back to the placeholder URL
+      }
+    }
+
+    // 3. Hash Password and Create User
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const newUser = new User({
       name,
       email,
       password: hashedPassword,
-      role: role || "freelancer",
+      role: req.body.role || "freelancer",
+      profileImage: profileImageUrl, // This will be the ImageKit URL or the default
     });
 
     await newUser.save();
 
+    // 4. Generate Token and Respond
     const token = await generateToken(newUser);
     console.log(token, "token here");
+
+    const userResponse = newUser.toObject();
+    delete userResponse.password;
+
     return res.status(201).json({
       message: "Freelance registered successfully",
-      user: newUser,
+      user: userResponse,
       token,
     });
   } catch (error) {
     console.error("Register Error:", error);
-    res.status(500).json({ message: "Server error" });
+    res.status(500).json({ message: "Server error", error: error.message });
   }
 };
 
@@ -115,26 +152,39 @@ const getJobs = async (req, res) => {
 };
 
 const applyJobs = async (req, res) => {
-  const id = req.params.id;
+  const jobId = req.params.id;
   const freelancerId = req.user.id;
   const { coverLetter, bidAmount } = req.body;
 
   try {
-    const job = await jobModel.findById(id);
+    // Check if job exists
+    const job = await jobModel.findById(jobId);
     if (!job) {
       return res.status(404).json({ message: "Job not found" });
     }
 
-    // Create proposal
+    // Check if freelancer already applied
+    const existingProposal = await proposalModel.findOne({
+      job: jobId,
+      freelancer: freelancerId,
+    });
+
+    if (existingProposal) {
+      return res.status(409).json({
+        message: "You have already applied for this job",
+      });
+    }
+
+    // Create new proposal
     const proposal = await proposalModel.create({
-      job: id,
+      job: jobId,
       freelancer: freelancerId,
       coverLetter,
       bidAmount,
     });
 
-    // Increment proposal count WITHOUT re-validating the job
-    await jobModel.updateOne({ _id: id }, { $inc: { proposalsCount: 1 } });
+    // Increase proposalsCount
+    await jobModel.updateOne({ _id: jobId }, { $inc: { proposalsCount: 1 } });
 
     return res.status(200).json({
       message: "Applied successfully",

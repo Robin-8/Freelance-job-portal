@@ -91,12 +91,10 @@ const addJob = async (req, res) => {
 
   try {
     if (!title || !description || !budget || !deadline || !postedBy || !place) {
-      return res
-        .status(400)
-        .json({
-          message:
-            "Please provide all required fields (title, description, budget, deadline, postedBy, place).",
-        });
+      return res.status(400).json({
+        message:
+          "Please provide all required fields (title, description, budget, deadline, postedBy, place).",
+      });
     }
 
     if (!req.user || !req.user._id) {
@@ -104,15 +102,24 @@ const addJob = async (req, res) => {
         .status(401)
         .json({ message: "User not found or unauthorized" });
     }
+    const existingJob = await jobModel.findOne({
+      title: title.trim().toLowerCase(),
+      postedBy: postedBy,
+    });
+    if (existingJob) {
+      return res.status(409).json({
+        message: "A job with this title already exists!",
+      });
+    }
 
     const newJob = await jobModel.create({
-      title,
+      title:title.trim().toLowerCase(),
       description,
       skillsRequired,
       budgetType,
       budget,
       deadline,
-      postedBy: postedBy,
+      postedBy,
       place: place,
     });
 

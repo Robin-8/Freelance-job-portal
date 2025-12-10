@@ -25,7 +25,9 @@ const authClient = async (req, res, next) => {
         .json({ message: "Your account is blocked, contact support" });
     }
 
+    // keep both `req.user` and `req.client` for compatibility
     req.user = user;
+    req.client = user;
     next();
   } catch (error) {
     return res.status(403).json({ message: "Invalid or expired token" });

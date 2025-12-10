@@ -1,9 +1,10 @@
 const express=require('express')
 const { register, login, getJobs, applyJobs, getAllPreposals, updateProfile, withdrawProposal, getJobById, getProfile, getPreposalCount } = require('../controllers/freeLanceController')
 const { authFreelancer } = require('../middileware/freeLanceMiddilware')
+const upload =require('../multer/multer')
 const router=express.Router()
 
-router.post('/register',register)
+router.post('/register',upload.single('profileImage'),register)
 router.post('/login',login)
 router.get('/allJobs',getJobs)
 router.get('/job/:id',authFreelancer,getJobById)
