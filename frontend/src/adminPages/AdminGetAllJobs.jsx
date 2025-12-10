@@ -3,6 +3,7 @@ import React from "react";
 import { useSelector } from "react-redux";
 import axiosInstance from "../api/axiosApi";
 import { Link } from "react-router-dom";
+import toast from "react-hot-toast";
 
 const AdminGetAllJobs = () => {
   const { token } = useSelector((state) => state.client);
@@ -25,11 +26,11 @@ const AdminGetAllJobs = () => {
       headers: { Authorization: `Bearer ${token}` },
     });
 
-    alert("Job soft-deleted!");
+    toast.success("Job soft-deleted!");
     queryClient.invalidateQueries(["getJobs"]); // refresh list
   } catch (err) {
     console.log(err);
-    alert("Failed to delete job");
+    toast.error("Failed to delete job");
   }
 };
 

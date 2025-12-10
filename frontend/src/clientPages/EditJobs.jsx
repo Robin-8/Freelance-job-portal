@@ -4,6 +4,7 @@ import { useSelector } from "react-redux";
 import axiosInstance from "../api/axiosApi";
 import { useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
+import toast from "react-hot-toast";
 
 const EditJobs = () => {
   const { id } = useParams();
@@ -55,7 +56,7 @@ const EditJobs = () => {
       return res.data;
     },
     onSuccess: () => {
-      alert("Job updated successfully!");
+      toast.success("Job updated successfully!");
       navigate("/client/all");
     },
   });

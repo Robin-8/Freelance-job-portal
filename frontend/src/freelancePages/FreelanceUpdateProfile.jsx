@@ -3,6 +3,7 @@ import { useForm } from "react-hook-form";
 import { useSelector } from "react-redux";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import axiosInstance from "../api/axiosApi";
+import toast from "react-hot-toast";
 
 const FreelanceUpdateProfile = () => {
   const { token } = useSelector((state) => state.client);
@@ -50,11 +51,11 @@ const FreelanceUpdateProfile = () => {
 
     onSuccess: () => {
       queryClient.invalidateQueries(["freelancerProfile"]);
-      alert("Profile updated successfully");
+      toast.success("Profile updated successfully");
     },
 
     onError: () => {
-      alert("Profile update failed");
+      toast.error("Profile update failed");
     },
   });
 

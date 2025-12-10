@@ -21,7 +21,6 @@ const FreelancerHome = () => {
       role: "Freelancer",
     });
 
-    console.log("Freelancer Joined socket room:", user._id);
   }, [user]);
 
   // Fetch proposal count

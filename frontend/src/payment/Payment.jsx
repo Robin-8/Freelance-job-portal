@@ -5,7 +5,7 @@ import axiosInstance from "../api/axiosApi";
 const Payment = () => {
   const user = useSelector((state) => state.client?.user);
   const location = useLocation();
-  const { amount, preposalId } = location.state || {};
+  const { amount, jobId } = location.state || {};
 
   const startPayment = async () => {
     try {
@@ -14,50 +14,69 @@ const Payment = () => {
         return;
       }
 
+      // 1. Create Order (Backend)
       const { data } = await axiosInstance.post("/payment/createOrder", {
         amount,
         userId: user._id,
-        preposalId
+        jobId,
       });
 
+      const order = data.order;
+
+      // 2. Razorpay Options
       const options = {
         key: import.meta.env.VITE_RAZORPAY_KEY_ID,
-        amount: data.amount,
-        currency: data.currency,
-        order_id: data.id,
+        amount: order.amount,
+        currency: order.currency,
+        order_id: order.id,
         name: "Freelance Portal",
         description: "Freelancer Payment",
         handler: async function (response) {
-          await axiosInstance.post("/payment/verifyPayment", {
-            razorpay_order_id: response.razorpay_order_id,
-            razorpay_payment_id: response.razorpay_payment_id,
-            razorpay_signature: response.razorpay_signature,
-            preposalId
-          });
-          alert("Payment Successful!");
+          try {
+            // 3. Verify Payment (Backend)
+            await axiosInstance.post("/payment/verifyPayment", {
+              orderId: response.razorpay_order_id,
+              paymentId: response.razorpay_payment_id,
+              signature: response.razorpay_signature,
+            });
+
+            alert("Payment Successful!");
+          } catch (err) {
+            console.error("Verification Error:", err);
+            alert("Payment Verification Failed");
+          }
         },
         prefill: {
           name: user.name,
-          email: user.email
+          email: user.email,
         },
-        theme: { color: "#3399cc" }
+        theme: { color: "#111827" }, // Dark theme
       };
 
-      const razor = new window.Razorpay(options);
-      razor.open();
+      const razorpayInstance = new window.Razorpay(options);
+      razorpayInstance.open();
     } catch (error) {
-      console.error("create order err", error);
+      console.error("Payment Init Error:", error);
+      alert("Failed to create payment order");
     }
   };
 
   return (
-    <div className="p-10">
-      <button
-        className="bg-blue-600 text-white px-6 py-3 rounded"
-        onClick={startPayment}
-      >
-        Pay ₹{amount || 0} Now
-      </button>
+    <div className="w-full flex justify-center items-center min-h-screen bg-gray-900 text-white">
+      <div className="bg-gray-800 p-10 rounded-lg shadow-lg w-[400px] text-center">
+        <h2 className="text-2xl font-semibold mb-4">Payment</h2>
+        <p className="text-lg mb-6">
+          You are about to pay:
+          <span className="font-bold text-green-400"> ₹{amount || 0}</span>
+        </p>
+
+        <button
+          className="w-full bg-green-600 hover:bg-green-700 text-white py-3 rounded-lg text-lg"
+          onClick={startPayment}
+        >
+          Pay Now
+        </button>
+      </div>
     </div>
   );
 };

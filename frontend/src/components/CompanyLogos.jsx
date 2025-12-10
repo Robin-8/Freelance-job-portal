@@ -1,5 +1,5 @@
 import Marquee from "react-fast-marquee";
-
+import React from "react";
 const CompanyLogos = () => {
  const companies = [
   {

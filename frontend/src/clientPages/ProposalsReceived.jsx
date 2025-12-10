@@ -22,25 +22,29 @@ const ProposalsReceived = () => {
   // Mutation to update proposal status
   const updateMutation = useMutation({
     mutationFn: async ({ preposalId, status }) => {
-      const res = await axiosInstance.patch(`/client/updateStatus/${preposalId}`, { status });
+      const res = await axiosInstance.patch(
+        `/client/updateStatus/${preposalId}`,
+        { status }
+      );
       return res.data;
     },
     onSuccess: (data, variables) => {
-      // Refresh proposals
       queryClient.invalidateQueries(["proposalsReceived"]);
 
-      // If accepted, navigate to payment page with amount & proposal ID
       if (variables.status === "accepted") {
-        const proposal = proposals.find((p) => p._id === variables.preposalId);
+        const proposal = proposals.find(
+          (p) => p._id === variables.preposalId
+        );
+
         navigate("/client/payment", {
-          state: { preposalId: variables.preposalId, amount: proposal.bidAmount },
+          state: {
+            preposalId: variables.preposalId,
+            amount: proposal?.bidAmount,
+          },
         });
       }
     },
   });
-
-  if (isLoading) return <p className="text-white text-center mt-10">Loading proposals...</p>;
-  if (error) return <p className="text-red-500 text-center mt-10">Error loading proposals</p>;
 
   return (
     <div className="min-h-screen bg-gray-950 text-white px-6 py-10">
@@ -52,11 +56,29 @@ const ProposalsReceived = () => {
         </p>
       </div>
 
-      {proposals.length === 0 ? (
+      {/* Loading */}
+      {isLoading && (
+        <p className="text-white text-center mt-10">Loading proposals...</p>
+      )}
+
+      {/* Error */}
+      {error && (
+        <p className="text-red-500 text-center mt-10">
+          Error loading proposals
+        </p>
+      )}
+
+      {/* Empty State */}
+      {!isLoading && proposals.length === 0 && (
         <div className="max-w-4xl mx-auto bg-gray-900 p-10 rounded-2xl text-center border border-gray-800">
-          <p className="text-gray-400 text-lg">No proposals received yet.</p>
+          <p className="text-gray-400 text-lg">
+            No proposals received yet.
+          </p>
         </div>
-      ) : (
+      )}
+
+      {/* Proposals List */}
+      {!isLoading && proposals.length > 0 && (
         <div className="max-w-6xl mx-auto grid grid-cols-1 gap-6">
           {proposals.map((p) => (
             <div
@@ -68,7 +90,8 @@ const ProposalsReceived = () => {
                 <div>
                   <h2 className="text-xl font-semibold">{p.job?.title}</h2>
                   <p className="text-sm text-gray-400 mt-1 flex items-center gap-1">
-                    <Clock size={16} /> Submitted: {new Date(p.createdAt).toLocaleDateString()}
+                    <Clock size={16} /> Submitted:{" "}
+                    {new Date(p.createdAt).toLocaleDateString()}
                   </p>
                 </div>
                 <p className="flex items-center gap-1 text-green-400 font-semibold">
@@ -82,8 +105,12 @@ const ProposalsReceived = () => {
                   <User size={24} className="text-gray-400" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-semibold">{p.freelancer?.name}</h3>
-                  <p className="text-gray-400 text-sm">{p.freelancer?.email}</p>
+                  <h3 className="text-lg font-semibold">
+                    {p.freelancer?.name}
+                  </h3>
+                  <p className="text-gray-400 text-sm">
+                    {p.freelancer?.email}
+                  </p>
                 </div>
               </div>
 
@@ -92,25 +119,31 @@ const ProposalsReceived = () => {
                 <h4 className="font-semibold text-white flex items-center gap-2">
                   <FileText size={18} /> Cover Letter
                 </h4>
-                <p className="text-gray-300 mt-2 text-sm leading-relaxed">{p.coverLetter}</p>
+                <p className="text-gray-300 mt-2 text-sm leading-relaxed">
+                  {p.coverLetter}
+                </p>
               </div>
 
-              {/* Action Buttons */}
+              {/* Buttons */}
               <div className="mt-6 flex gap-4">
-                {/* Accept */}
                 <button
                   onClick={() =>
-                    updateMutation.mutate({ preposalId: p._id, status: "accepted" })
+                    updateMutation.mutate({
+                      preposalId: p._id,
+                      status: "accepted",
+                    })
                   }
                   className="flex-1 bg-green-600 py-3 rounded-xl text-white font-semibold hover:bg-green-700 transition"
                 >
                   Accept Proposal
                 </button>
 
-                {/* Reject */}
                 <button
                   onClick={() =>
-                    updateMutation.mutate({ preposalId: p._id, status: "rejected" })
+                    updateMutation.mutate({
+                      preposalId: p._id,
+                      status: "rejected",
+                    })
                   }
                   className="flex-1 bg-red-600 py-3 rounded-xl text-white font-semibold hover:bg-red-700 transition"
                 >

@@ -2,6 +2,7 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import React, { useState } from "react";
 import { useParams } from "react-router-dom";
 import axiosInstance from "../api/axiosApi";
+import toast from "react-hot-toast";
 
 const FreelanceJobDetails = () => {
   const { id } = useParams();
@@ -40,10 +41,10 @@ const applyMutation = useMutation({
     );
   },
   onSuccess: () => {
-    alert("Applied Successfully!");
+    toast.success("Applied Successfully!");
   },
   onError: (err) => {
-    alert(err?.response?.data?.message || "Something went wrong.");
+    toast.error(err?.response?.data?.message || "Something went wrong.");
   },
 });
 

@@ -1,3 +1,4 @@
+import React from "react";
 import "./App.css";
 import { Routes, Route } from "react-router-dom";
 import Layout from "./components/Layout";
@@ -29,6 +30,8 @@ import socket from "./socket";
 import ChatBox from "./chat/ChatBox";
 import ChatPage from "./chat/ChatPage";
 import Payment from "./payment/Payment";
+import ProtectedRoute from "./protectedRoute";
+import { Toaster } from "react-hot-toast";
 
 function App() {
   const { user } = useSelector((state) => state.client);
@@ -50,30 +53,72 @@ function App() {
   }, [user]);
   return (
     <>
+      <Toaster position="top-right" />
       <Routes>
         <Route element={<Layout />}>
-          // Route for freelancer
+          {/* Public routes */}
           <Route path="/freelancer/register" element={<FreelanceRegister />} />
           <Route path="/freelancer/login" element={<FreelanceLogin />} />
+
+          {/* PROTECTED FREELANCER ROUTES */}
           <Route
             path="/freelancer/freelancerHome"
-            element={<FreelancerHome />}
+            element={
+              <ProtectedRoute>
+                <FreelancerHome />
+              </ProtectedRoute>
+            }
           />
-          <Route path="/freelancer/searchJobs" element={<FreelancerSearch />} />
+          <Route
+            path="/freelancer/searchJobs"
+            element={
+              <ProtectedRoute>
+                <FreelancerSearch />
+              </ProtectedRoute>
+            }
+          />
           <Route
             path="/freelancer/applyJob/:id"
-            element={<FreelanceJobDetails />}
+            element={
+              <ProtectedRoute>
+                <FreelanceJobDetails />
+              </ProtectedRoute>
+            }
           />
           <Route
             path="/freelancer/getPreposal"
-            element={<FreelancerSentProposals />}
+            element={
+              <ProtectedRoute>
+                <FreelancerSentProposals />
+              </ProtectedRoute>
+            }
           />
           <Route
             path="/freelancer/updateProfile"
-            element={<FreelanceUpdateProfile />}
+            element={
+              <ProtectedRoute>
+                <FreelanceUpdateProfile />
+              </ProtectedRoute>
+            }
           />
-          <Route path="/freelancer/getProfile" element={<FreelanceProfile />} />
-          // Route for clients
+          <Route
+            path="/freelancer/getProfile"
+            element={
+              <ProtectedRoute>
+                <FreelanceProfile />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/freelancer/chat"
+            element={
+              <ProtectedRoute>
+                <ChatPage />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Client */}
           <Route path="/client/register" element={<ClientRegister />} />
           <Route path="/client/login" element={<ClientLogin />} />
           <Route path="/client/home" element={<ClientHome />} />
@@ -81,8 +126,9 @@ function App() {
           <Route path="/client/addJob" element={<AddJob />} />
           <Route path="/client/all" element={<ClientGetJobs />} />
           <Route path="/client/editJobs/:id" element={<EditJobs />} />
-          <Route path="/client/payment" element={<Payment/>}/>
-          //Admin route
+          <Route path="/client/payment" element={<Payment />} />
+
+          {/* Admin */}
           <Route path="/admin/home" element={<AdminHome />} />
           <Route path="/admin/login" element={<AdminLogin />} />
           <Route path="/admin/register" element={<AdminRegister />} />
@@ -90,11 +136,10 @@ function App() {
           <Route path="/admin/getAdminJobs" element={<AdminGetAllJobs />} />
           <Route path="/admin/getPreposals" element={<AdminGetPreposals />} />
           <Route path="/admin/editJobs/:id" element={<AdminEditJobs />} />
-          //Chat route
-          <Route path="/freelancer/chat" element={<ChatPage />} />
+
+          {/* Chat (others) */}
           <Route path="/admin/chat" element={<ChatPage />} />
           <Route path="/chatPage" element={<ChatPage />} />
-
         </Route>
       </Routes>
     </>

@@ -4,50 +4,63 @@ import axiosInstance from "../api/axiosApi";
 import { useDispatch } from "react-redux";
 import { login } from "../slice/clientSlice";
 import { Link, useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
+import toast from "react-hot-toast";
 
 const ClientLogin = () => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
+
   const {
     register,
     handleSubmit,
     formState: { errors },
   } = useForm();
-  const navigate =useNavigate()
 
   const onSubmit = async (formData) => {
     try {
       const response = await axiosInstance.post("/client/login", formData);
       const { user, token } = response.data;
+
       dispatch(login({ user, token }));
-      alert("✅ Login Successful!");
       localStorage.setItem("token", token);
       localStorage.setItem("role", user.role);
-      navigate("/client/home")
+
+      toast.success("Login Successful!");
+      navigate("/client/home");
     } catch (error) {
-      console.error("Login error:", error.response?.data || error.message);
-      alert(error.response?.data?.message || "Login failed");
+      toast.error(error.response?.data?.message || "Login failed");
     }
   };
 
   return (
-    <div className="min-h-screen bg-black flex items-center justify-center px-4">
-      {/* Login Card */}
-      <div className="bg-red-600 w-full max-w-md rounded-2xl shadow-xl p-8">
-        <h2 className="text-3xl font-bold text-center text-white mb-6">
+    <div className="min-h-screen bg-black flex items-center justify-center px-4 relative overflow-hidden">
+      {/* Radial gradient lights */}
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,#1a1a1a,transparent_70%)] opacity-70"></div>
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_bottom,#111,#000_80%)] opacity-60"></div>
+
+      {/* Glass-effect card */}
+      <motion.div
+        initial={{ opacity: 0, y: 50 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8 }}
+        className="backdrop-blur-xl bg-white/10 border border-white/20 rounded-3xl shadow-2xl w-full max-w-md p-10"
+      >
+        <h2 className="text-4xl font-bold text-center text-white mb-6">
           Client Login
         </h2>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           {/* Email */}
           <div>
-            <label className="block text-white font-medium mb-1">Email</label>
+            <label className="text-white text-sm mb-1 block">Email</label>
             <input
               {...register("email", { required: "Email is required" })}
-              className="w-full p-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="Enter your email"
+              className="w-full bg-white/10 text-white border border-white/20 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
             {errors.email && (
-              <p className="text-black font-bold text-sm mt-1">
+              <p className="text-red-400 text-xs mt-1">
                 {errors.email.message}
               </p>
             )}
@@ -55,42 +68,37 @@ const ClientLogin = () => {
 
           {/* Password */}
           <div>
-            <label className="block text-white font-medium mb-1">
-              Password
-            </label>
+            <label className="text-white text-sm mb-1 block">Password</label>
             <input
               {...register("password", { required: "Password is required" })}
               type="password"
-              className="w-full p-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="Enter your password"
+              className="w-full bg-white/10 text-white border border-white/20 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
             {errors.password && (
-              <p className="text-black font-bold text-sm mt-1">
+              <p className="text-red-400 text-xs mt-1">
                 {errors.password.message}
               </p>
             )}
           </div>
 
-          {/* Submit */}
+          {/* Login Button */}
           <button
             type="submit"
-            className="w-full bg-green-600 text-white p-3 rounded-xl font-semibold hover:bg-green-700 transition-all"
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-xl text-lg font-semibold shadow-lg hover:shadow-blue-500/40 transition-all"
           >
             Login
           </button>
         </form>
 
-        {/* Don't have an account */}
-        <p className="text-center text-black font-bold mt-5 text-sm">
-          Don’t have an account?{" "}
-          <Link
-            to="/client/register"
-            className="text-white underline font-semibold"
-          >
+        {/* Register Link */}
+        <p className="text-center text-gray-300 mt-6 text-sm">
+          Don't have an account?{" "}
+          <Link to="/client/register" className="text-blue-400 underline">
             Register here
           </Link>
         </p>
-      </div>
+      </motion.div>
     </div>
   );
 };

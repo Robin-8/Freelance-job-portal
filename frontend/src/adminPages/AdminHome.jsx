@@ -13,7 +13,7 @@ const AdminHome = () => {
         userId: user._id,
         role: user.role,
       });
-      console.log("Admin joined socket room");
+
     }
   }, [user]);
 

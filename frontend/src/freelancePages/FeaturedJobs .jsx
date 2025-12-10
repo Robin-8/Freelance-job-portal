@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import axiosInstance from "../api/axiosApi";
+import React from "react";
 
 const fetchFeaturedJobs = async () => {
     const res = await axiosInstance.get("/freelancer/allJobs?sort=latest");
