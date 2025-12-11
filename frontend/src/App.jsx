@@ -30,7 +30,7 @@ import socket from "./socket";
 import ChatBox from "./chat/ChatBox";
 import ChatPage from "./chat/ChatPage";
 import Payment from "./payment/Payment";
-import ProtectedRoute from "./protectedRoute";
+import ProtectedRoute from "./ProtectedRoute";
 import { Toaster } from "react-hot-toast";
 
 function App() {
