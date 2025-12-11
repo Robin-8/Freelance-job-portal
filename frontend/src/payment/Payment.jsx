@@ -35,9 +35,9 @@ const Payment = () => {
           try {
             // 3. Verify Payment (Backend)
             await axiosInstance.post("/payment/verifyPayment", {
-              orderId: response.razorpay_order_id,
-              paymentId: response.razorpay_payment_id,
-              signature: response.razorpay_signature,
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature,
             });
 
             alert("Payment Successful!");

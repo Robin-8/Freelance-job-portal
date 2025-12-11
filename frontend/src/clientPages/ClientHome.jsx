@@ -38,7 +38,25 @@ const ClientHome = () => {
     }
   }, [user]);
 
-  // Fetch Total Payments
+  const { data: freelancerSummary } = useQuery({
+    queryKey: ["clientFreelancerApplied"],
+    queryFn: async () => {
+      const res = await axiosInstance.get("/client/total-freelancers");
+      return res.data;
+    },
+  });
+  const totalFreelancersApplied = freelancerSummary?.totalApplicants || 0;
+
+  // Fetch jobs posted count
+  const { data: jobsSummary } = useQuery({
+    queryKey: ["clientJobsPosted"],
+    queryFn: async () => {
+      const res = await axiosInstance.get("/client/jobs-posted");
+      return res.data;
+    },
+  });
+  const jobsPosted = jobsSummary?.jobsPosted || 0;
+
   useEffect(() => {
     const fetchTotal = async () => {
       try {
@@ -63,10 +81,19 @@ const ClientHome = () => {
 
   const paymentData = paymentSummary?.monthly || [];
 
+  // Fetch Proposal Statistics
+  const { data: proposalStats } = useQuery({
+    queryKey: ["clientProposalStats"],
+    queryFn: async () => {
+      const res = await axiosInstance.get("/client/proposal-stats");
+      return res.data;
+    },
+  });
+
   const proposalData = [
-    { name: "Applied", value: 62 },
-    { name: "Accepted", value: 24 },
-    { name: "Rejected", value: 14 },
+    { name: "Applied", value: proposalStats?.applied || 0 },
+    { name: "Accepted", value: proposalStats?.accepted || 0 },
+    { name: "Rejected", value: proposalStats?.rejected || 0 },
   ];
 
   const COLORS = ["#34D399", "#60A5FA", "#F87171"];
@@ -93,7 +120,7 @@ const ClientHome = () => {
           <Users className="w-12 h-12 text-blue-400" />
           <div>
             <p className="text-gray-400 text-sm">Freelancers Applied</p>
-            <h3 className="text-2xl font-bold">62</h3>
+            <h3 className="text-2xl font-bold">{totalFreelancersApplied}</h3>
           </div>
         </div>
 
@@ -101,7 +128,7 @@ const ClientHome = () => {
           <BarChart3 className="w-12 h-12 text-yellow-400" />
           <div>
             <p className="text-gray-400 text-sm">Jobs Posted</p>
-            <h3 className="text-2xl font-bold">18</h3>
+            <h3 className="text-2xl font-bold">{jobsPosted}</h3>
           </div>
         </div>
       </div>
@@ -147,9 +174,7 @@ const ClientHome = () => {
         >
           <Inbox className="w-10 h-10 text-purple-400 group-hover:scale-110 transition" />
           <h2 className="text-xl font-semibold mt-4">Messages</h2>
-          <p className="text-gray-400 mt-2 text-sm">
-            Chat with freelancers.
-          </p>
+          <p className="text-gray-400 mt-2 text-sm">Chat with freelancers.</p>
         </Link>
       </div>
 
@@ -169,9 +194,7 @@ const ClientHome = () => {
 
         {/* PROPOSAL PIE CHART */}
         <div className="bg-gray-900 p-6 rounded-2xl shadow">
-          <h3 className="text-xl font-semibold mb-4">
-            Proposal Overview
-          </h3>
+          <h3 className="text-xl font-semibold mb-4">Proposal Overview</h3>
           <ResponsiveContainer width="100%" height={250}>
             <PieChart>
               <Pie
