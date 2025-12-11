@@ -9,14 +9,28 @@ const clientRoute = require("./routes/clientRoute");
 const adminRoute = require("./routes/adminRoute");
 const freeLanceRoute = require("./routes/freeLanceRoute");
 const chatRoutes = require("./routes/chatRoute");
-const paymentRoutes =require('./routes/paymentRoute')
+const paymentRoutes = require("./routes/paymentRoute");
 
 const app = express();
 
-// CORS FOR EXPRESS + SOCKET.IO
+// Allowed frontend origins
+const allowedOrigins = [
+  "http://localhost:5173", // local dev
+  "https://peppy-gelato-6f6297.netlify.app", // Netlify frontend
+];
+
+// CORS Middleware
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: function (origin, callback) {
+      if (!origin) return callback(null, true);
+      if (allowedOrigins.indexOf(origin) === -1) {
+        const msg =
+          "The CORS policy for this site does not allow access from the specified Origin.";
+        return callback(new Error(msg), false);
+      }
+      return callback(null, true);
+    },
     credentials: true,
   })
 );
@@ -24,19 +38,18 @@ app.use(
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-// Create HTTP server for SOCKET.IO
+// Create HTTP server for Socket.IO
 const server = http.createServer(app);
 
-// SOCKET.IO
+// Socket.IO setup
 const io = new Server(server, {
   cors: {
-    origin: "http://localhost:5173",
+    origin: allowedOrigins,
     methods: ["GET", "POST"],
     credentials: true,
   },
 });
 
-// STORE ONLINE USERS
 let onlineUsers = {};
 
 io.on("connection", (socket) => {
@@ -54,22 +67,17 @@ io.on("connection", (socket) => {
 
   socket.on("send_message", ({ senderId, receiverId, message }) => {
     const roomId = [senderId, receiverId].sort().join("-");
-    const receiverSocket = onlineUsers[receiverId];
-
-    // Emit to room (both users receive)
     io.to(roomId).emit("receive_message", {
       senderId,
       receiverId,
       message,
       timestamp: new Date(),
     });
-
     console.log(`Message from ${senderId} to ${receiverId}`);
   });
 
   socket.on("disconnect", () => {
     console.log("❌ User disconnected:", socket.id);
-
     for (let id in onlineUsers) {
       if (onlineUsers[id] === socket.id) {
         delete onlineUsers[id];
@@ -78,19 +86,19 @@ io.on("connection", (socket) => {
   });
 });
 
-// ROUTES
+// API Routes
 app.use("/api/client", clientRoute);
 app.use("/api/admin", adminRoute);
 app.use("/api/freelancer", freeLanceRoute);
 app.use("/api/chat", chatRoutes);
-app.use('/api/payment',paymentRoutes)
+app.use("/api/payment", paymentRoutes);
 
-// CONNECT DB
+// Connect Database
 connectDb();
 
-// START SERVER (IMPORTANT)
+// Start server
 const PORT = process.env.PORT || 3000;
 
 server.listen(PORT, () => {
-  console.log(`🚀 Server + Socket.IO running at: http://localhost:${PORT}`);
+  console.log(`🚀 Server + Socket.IO running on port ${PORT}`);
 });
