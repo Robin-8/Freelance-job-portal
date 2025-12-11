@@ -27,7 +27,7 @@ const createOrder = async (req, res) => {
       status: "created",
     });
 
-    return res.status(200).json(order);
+    return res.status(200).json({ order });
   } catch (err) {
     console.log(err);
     return res.status(500).json({ message: "Order creation failed" });
@@ -37,29 +37,38 @@ const createOrder = async (req, res) => {
 // 2. Verify Razorpay Payment
 const verifyPayment = async (req, res) => {
   try {
-    const { razorpay_order_id, razorpay_payment_id, razorpay_signature } =
-      req.body;
+    const {
+      razorpay_order_id,
+      razorpay_payment_id,
+      razorpay_signature
+    } = req.body;
 
-    const signature = crypto
+    const body = razorpay_order_id + "|" + razorpay_payment_id;
+
+    const expectedSignature = crypto
       .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
-      .update(razorpay_order_id + "|" + razorpay_payment_id)
+      .update(body)
       .digest("hex");
 
-    if (signature !== razorpay_signature) {
+    if (expectedSignature !== razorpay_signature) {
       return res.status(400).json({ message: "Invalid signature" });
     }
 
     await Payment.findOneAndUpdate(
       { orderId: razorpay_order_id },
-      { paymentId: razorpay_payment_id, status: "paid" }
+      {
+        paymentId: razorpay_payment_id,
+        status: "paid",
+      }
     );
 
-    return res.status(200).json({ message: "Payment verified successfully" });
-  } catch (err) {
-    console.log(err);
-    return res.status(500).json({ message: "Verification failed" });
+    res.json({ message: "Payment verified" });
+  } catch (error) {
+    console.log("VERIFY ERROR:", error);
+    res.status(500).json({ message: "Server error" });
   }
 };
+
 
 // 3. Client Total Payment (Fixed)
 const getClientTotalPayments = async (req, res) => {
@@ -122,22 +131,33 @@ const getClientPaymentSummary = async (req, res) => {
     ]);
 
     const months = [
-      "Jan","Feb","Mar","Apr","May","Jun",
-      "Jul","Aug","Sep","Oct","Nov","Dec"
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dec",
     ];
 
-    const monthly = Array(12).fill(0).map((v, i) => ({
-      month: months[i],
-      amount: 0,
-    }));
+    const monthly = Array(12)
+      .fill(0)
+      .map((v, i) => ({
+        month: months[i],
+        amount: 0,
+      }));
 
     monthlyResult.forEach((m) => {
       monthly[m._id.month - 1].amount = m.amount;
     });
 
     return res.status(200).json({
-      totalAmount:
-        totalResult.length > 0 ? totalResult[0].total : 0,
+      totalAmount: totalResult.length > 0 ? totalResult[0].total : 0,
       monthly,
     });
   } catch (err) {

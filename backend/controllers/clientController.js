@@ -113,7 +113,7 @@ const addJob = async (req, res) => {
     }
 
     const newJob = await jobModel.create({
-      title:title.trim().toLowerCase(),
+      title: title.trim().toLowerCase(),
       description,
       skillsRequired,
       budgetType,
@@ -250,6 +250,113 @@ const editJobs = async (req, res) => {
   }
 };
 
+const getApplicantsCount = async (req, res) => {
+  try {
+    const jobId = req.params.id;
+
+    const count = await Proposal.countDocuments({ job: jobId });
+
+    return res.status(200).json({
+      success: true,
+      applicantsCount: count,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Server error",
+      error,
+    });
+  }
+};
+
+const getClientTotalFreelancersApplied = async (req, res) => {
+  try {
+    const clientId = req.user?._id; // from auth middleware (use _id not id)
+
+    // Step 1: Find all jobs posted by this client
+    const jobs = await jobModel.find({ postedBy: clientId }).select("_id");
+    const jobIds = jobs.map((j) => j._id);
+
+    if (jobIds.length === 0) {
+      return res.status(200).json({ totalApplicants: 0 });
+    }
+
+    // Step 2: Count proposals for these jobs
+    const totalApplicants = await proposalModel.countDocuments({
+      job: { $in: jobIds },
+    });
+
+    return res.status(200).json({ totalApplicants });
+  } catch (error) {
+    console.log("Client applicant count error:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+const getClientJobsPosted = async (req, res) => {
+  try {
+    const clientId = req.user?._id;
+
+    // Count jobs posted by this client
+    const jobsCount = await jobModel.countDocuments({
+      postedBy: clientId,
+      isDeleted: false,
+    });
+
+    return res.status(200).json({ jobsPosted: jobsCount });
+  } catch (error) {
+    console.log("Client jobs count error:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+const getClientProposalStats = async (req, res) => {
+  try {
+    const clientId = req.user?._id;
+
+    const jobs = await jobModel.find({ postedBy: clientId }).select("_id");
+    const jobIds = jobs.map((j) => j._id);
+
+    if (jobIds.length === 0) {
+      return res.status(200).json({
+        applied: 0,
+        accepted: 0,
+        rejected: 0,
+      });
+    }
+
+    const proposalStats = await proposalModel.aggregate([
+      {
+        $match: { job: { $in: jobIds } },
+      },
+      {
+        $group: {
+          _id: "$status",
+          count: { $sum: 1 },
+        },
+      },
+    ]);
+
+    let applied = 0,
+      accepted = 0,
+      rejected = 0;
+    proposalStats.forEach((stat) => {
+      if (stat._id === "pending") applied = stat.count;
+      if (stat._id === "accepted") accepted = stat.count;
+      if (stat._id === "rejected") rejected = stat.count;
+    });
+
+    return res.status(200).json({
+      applied: applied || 0,
+      accepted: accepted || 0,
+      rejected: rejected || 0,
+    });
+  } catch (error) {
+    console.log("Client proposal stats error:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
 module.exports = {
   register,
   login,
@@ -260,4 +367,8 @@ module.exports = {
   proposalReceived,
   proposalStatus,
   editJobs,
+  getApplicantsCount,
+  getClientTotalFreelancersApplied,
+  getClientJobsPosted,
+  getClientProposalStats,
 };
