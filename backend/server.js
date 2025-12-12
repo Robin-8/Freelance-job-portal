@@ -19,29 +19,23 @@ const allowedOrigins = [
   "https://freelacejobportal.netlify.app", // Netlify frontend
 ];
 
-// CORS Middleware
+// 1. MIDDLEWARE: Request Body Parsers (placed before CORS is often safer)
+app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
+
+// 2. CORS Middleware: Simplified and Direct Origin/Method Configuration
 app.use(
   cors({
-    origin: function (origin, callback) {
-      if (!origin) return callback(null, true);
-      if (allowedOrigins.indexOf(origin) === -1) {
-        const msg =
-          "The CORS policy for this site does not allow access from the specified Origin.";
-        return callback(new Error(msg), false);
-      }
-      return callback(null, true);
-    },
+    origin: allowedOrigins, // Directly uses the array of allowed origins
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"], // Explicitly allow all common methods, including OPTIONS (preflight)
     credentials: true,
   })
 );
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
-
 // Create HTTP server for Socket.IO
 const server = http.createServer(app);
 
-// Socket.IO setup
+// Socket.IO setup (CORS configuration here is fine for Socket.IO)
 const io = new Server(server, {
   cors: {
     origin: allowedOrigins,
