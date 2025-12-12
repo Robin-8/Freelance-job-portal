@@ -16,7 +16,7 @@ const app = express();
 // Allowed frontend origins
 const allowedOrigins = [
   "http://localhost:5173", // local dev
-  "https://peppy-gelato-6f6297.netlify.app", // Netlify frontend
+  "https://freelacejobportal.netlify.app", // Netlify frontend
 ];
 
 // CORS Middleware
