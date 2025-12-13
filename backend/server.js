@@ -18,7 +18,7 @@ const app = express();
 
 const allowedOrigins = [
   "http://localhost:5173",
-  "https://freelance-job-portal-zeta.vercel.app",
+  "https://freelance-job-portal-tau.vercel.app"
 ];
 
 app.use(express.json());
