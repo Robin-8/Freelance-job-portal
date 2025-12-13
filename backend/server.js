@@ -19,7 +19,7 @@ const app = express();
 // Allowed frontend origins
 const allowedOrigins = [
   "http://localhost:5173",
-  "https://freelance-job-portal-ckqt.vercel.app/",
+  "freelance-job-portal-zeta.vercel.app"
 ];
 
 // Middleware
