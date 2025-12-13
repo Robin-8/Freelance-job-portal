@@ -1,7 +1,6 @@
-// upload.middleware.js (Example)
-const multer = require('multer');
+import multer from "multer";
 
-const storage = multer.memoryStorage(); // IMPORTANT: Stores file in memory (req.file.buffer)
-const upload = multer({ storage: storage });
+const storage = multer.memoryStorage(); // stores file in req.file.buffer
+const upload = multer({ storage });
 
-module.exports = upload;
+export default upload;

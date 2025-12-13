@@ -1,8 +1,8 @@
-const jwt = require("jsonwebtoken");
-const clientModel = require("../model/clientModel");
+import jwt  from "jsonwebtoken";
+import clientModel from "../model/clientModel.js";
 
 // Universal auth for client, freelancer, and admin
-const authUser = async (req, res, next) => {
+export const authUser = async (req, res, next) => {
   const authHeader = req.headers.authorization;
 
   if (!authHeader?.startsWith("Bearer ")) {
@@ -38,4 +38,4 @@ const authUser = async (req, res, next) => {
   }
 };
 
-module.exports = { authUser };
+

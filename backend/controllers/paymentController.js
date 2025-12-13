@@ -1,7 +1,7 @@
-const Razorpay = require("razorpay");
-const crypto = require("crypto");
-const mongoose = require("mongoose");
-const Payment = require("../model/paymentModel");
+import Razorpay from "razorpay";
+import crypto from "crypto";
+import mongoose from "mongoose";
+import Payment from "../model/paymentModel.js";
 
 const instance = new Razorpay({
   key_id: process.env.RAZORPAY_KEY_ID,
@@ -9,13 +9,13 @@ const instance = new Razorpay({
 });
 
 // 1. Create Razorpay Order
-const createOrder = async (req, res) => {
+export const createOrder = async (req, res) => {
   try {
     const { amount, jobId } = req.body;
     const userId = req.client.id;
 
     const order = await instance.orders.create({
-      amount: amount * 100,
+      amount: amount * 100, // paise
       currency: "INR",
     });
 
@@ -35,15 +35,15 @@ const createOrder = async (req, res) => {
 };
 
 // 2. Verify Razorpay Payment
-const verifyPayment = async (req, res) => {
+export const verifyPayment = async (req, res) => {
   try {
     const {
       razorpay_order_id,
       razorpay_payment_id,
-      razorpay_signature
+      razorpay_signature,
     } = req.body;
 
-    const body = razorpay_order_id + "|" + razorpay_payment_id;
+    const body = `${razorpay_order_id}|${razorpay_payment_id}`;
 
     const expectedSignature = crypto
       .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
@@ -62,16 +62,15 @@ const verifyPayment = async (req, res) => {
       }
     );
 
-    res.json({ message: "Payment verified" });
+    return res.status(200).json({ message: "Payment verified" });
   } catch (error) {
     console.log("VERIFY ERROR:", error);
-    res.status(500).json({ message: "Server error" });
+    return res.status(500).json({ message: "Server error" });
   }
 };
 
-
-// 3. Client Total Payment (Fixed)
-const getClientTotalPayments = async (req, res) => {
+// 3. Client Total Payment
+export const getClientTotalPayments = async (req, res) => {
   try {
     const clientId = req.client.id;
 
@@ -82,20 +81,27 @@ const getClientTotalPayments = async (req, res) => {
           status: "paid",
         },
       },
-      { $group: { _id: null, totalPaid: { $sum: "$amount" } } },
+      {
+        $group: {
+          _id: null,
+          totalPaid: { $sum: "$amount" },
+        },
+      },
     ]);
 
     return res.status(200).json({
-      total: result.length > 0 ? result[0].totalPaid : 0,
+      total: result.length ? result[0].totalPaid : 0,
     });
   } catch (err) {
     console.log(err);
-    return res.status(500).json({ message: "Failed to fetch total payments" });
+    return res
+      .status(500)
+      .json({ message: "Failed to fetch total payments" });
   }
 };
 
-// 4. Client Summary – Monthly + Total
-const getClientPaymentSummary = async (req, res) => {
+// 4. Client Payment Summary (Monthly + Total)
+export const getClientPaymentSummary = async (req, res) => {
   try {
     const clientId = req.client.id;
     const year = new Date().getFullYear();
@@ -131,44 +137,25 @@ const getClientPaymentSummary = async (req, res) => {
     ]);
 
     const months = [
-      "Jan",
-      "Feb",
-      "Mar",
-      "Apr",
-      "May",
-      "Jun",
-      "Jul",
-      "Aug",
-      "Sep",
-      "Oct",
-      "Nov",
-      "Dec",
+      "Jan","Feb","Mar","Apr","May","Jun",
+      "Jul","Aug","Sep","Oct","Nov","Dec",
     ];
 
-    const monthly = Array(12)
-      .fill(0)
-      .map((v, i) => ({
-        month: months[i],
-        amount: 0,
-      }));
+    const monthly = Array.from({ length: 12 }, (_, i) => ({
+      month: months[i],
+      amount: 0,
+    }));
 
     monthlyResult.forEach((m) => {
       monthly[m._id.month - 1].amount = m.amount;
     });
 
     return res.status(200).json({
-      totalAmount: totalResult.length > 0 ? totalResult[0].total : 0,
+      totalAmount: totalResult.length ? totalResult[0].total : 0,
       monthly,
     });
   } catch (err) {
     console.log(err);
     return res.status(500).json({ message: "Error fetching summary" });
   }
-};
-
-module.exports = {
-  createOrder,
-  verifyPayment,
-  getClientTotalPayments,
-  getClientPaymentSummary,
 };

@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 const Schema = mongoose.Schema;
 
 const proposalSchema = new Schema({
@@ -32,4 +32,4 @@ const proposalSchema = new Schema({
   },
 });
 
-module.exports = mongoose.model("Proposal", proposalSchema);
+export default mongoose.model("Proposal", proposalSchema);

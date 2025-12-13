@@ -1,7 +1,7 @@
-const jwt = require("jsonwebtoken");
-const clientModel = require("../model/clientModel"); // or adminModel if you have separate model
+import jwt  from "jsonwebtoken";
+import clientModel  from "../model/clientModel.js"; // or adminModel if you have separate model
 
-const authAdmin = async (req, res, next) => {
+export const authAdmin = async (req, res, next) => {
   const authHeader = req.headers.authorization;
   
   if (!authHeader?.startsWith("Bearer ")) {
@@ -31,4 +31,4 @@ const authAdmin = async (req, res, next) => {
   }
 };
 
-module.exports = { authAdmin };
+

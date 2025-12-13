@@ -1,11 +1,11 @@
-const bcrypt = require("bcrypt");
-const clientModel = require("../model/clientModel");
-const jobModel = require("../model/jobModel");
-const { generateToken } = require("../jwt/jwt");
-const proposalModel = require("../model/proposalModel");
+import bcrypt  from "bcrypt";
+import clientModel from "../model/clientModel.js";
+import jobModel from "../model/jobModel.js";
+import { generateToken } from "../jwt/jwt.js";
+import proposalModel  from "../model/proposalModel.js";
 
 // ==================== REGISTER ====================
-const register = async (req, res) => {
+export const register = async (req, res) => {
   const { name, email, password, role, companyName, profileImage } = req.body;
 
   try {
@@ -44,7 +44,7 @@ const register = async (req, res) => {
 };
 
 // ==================== LOGIN ====================
-const login = async (req, res) => {
+export const login = async (req, res) => {
   const { email, password } = req.body;
 
   try {
@@ -77,7 +77,7 @@ const login = async (req, res) => {
 };
 
 // ==================== ADD JOB ====================
-const addJob = async (req, res) => {
+ export const addJob = async (req, res) => {
   const {
     title,
     description,
@@ -132,7 +132,7 @@ const addJob = async (req, res) => {
   }
 };
 
-const updateJob = async (req, res) => {
+export const updateJob = async (req, res) => {
   const { id } = req.params;
   const { title, description, skillsRequired } = req.body;
 
@@ -155,7 +155,7 @@ const updateJob = async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 };
-const deleteJob = async (req, res) => {
+export const deleteJob = async (req, res) => {
   const { id } = req.params;
 
   try {
@@ -176,7 +176,7 @@ const deleteJob = async (req, res) => {
   }
 };
 
-const getAllJobs = async (req, res) => {
+ export const getAllJobs = async (req, res) => {
   try {
     const jobs = await jobModel.find({ isDeleted: false });
     res.status(200).json({ jobs });
@@ -186,7 +186,7 @@ const getAllJobs = async (req, res) => {
   }
 };
 
-const proposalReceived = async (req, res) => {
+ export const proposalReceived = async (req, res) => {
   try {
     const jobs = await jobModel.find({ postedBy: req.user._id });
     if (!jobs || jobs.length < 0) {
@@ -212,7 +212,7 @@ const proposalReceived = async (req, res) => {
   }
 };
 
-const proposalStatus = async (req, res) => {
+export const proposalStatus = async (req, res) => {
   const { preposalId } = req.params;
   const { status } = req.body;
 
@@ -237,7 +237,7 @@ const proposalStatus = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
-const editJobs = async (req, res) => {
+export const editJobs = async (req, res) => {
   try {
     const id = req.params.id;
     const jobs = await jobModel.findByIdAndUpdate(id, req.body, { new: true });
@@ -250,7 +250,7 @@ const editJobs = async (req, res) => {
   }
 };
 
-const getApplicantsCount = async (req, res) => {
+export const getApplicantsCount = async (req, res) => {
   try {
     const jobId = req.params.id;
 
@@ -269,7 +269,7 @@ const getApplicantsCount = async (req, res) => {
   }
 };
 
-const getClientTotalFreelancersApplied = async (req, res) => {
+export const getClientTotalFreelancersApplied = async (req, res) => {
   try {
     const clientId = req.user?._id; // from auth middleware (use _id not id)
 
@@ -293,7 +293,7 @@ const getClientTotalFreelancersApplied = async (req, res) => {
   }
 };
 
-const getClientJobsPosted = async (req, res) => {
+export const getClientJobsPosted = async (req, res) => {
   try {
     const clientId = req.user?._id;
 
@@ -310,7 +310,7 @@ const getClientJobsPosted = async (req, res) => {
   }
 };
 
-const getClientProposalStats = async (req, res) => {
+export const getClientProposalStats = async (req, res) => {
   try {
     const clientId = req.user?._id;
 
@@ -357,7 +357,7 @@ const getClientProposalStats = async (req, res) => {
   }
 };
 
-module.exports = {
+export default  {
   register,
   login,
   addJob,

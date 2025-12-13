@@ -1,8 +1,8 @@
 // middleware/authFreelancer.js
-const jwt = require("jsonwebtoken");
-const User = require("../model/clientModel");
+import jwt  from "jsonwebtoken";
+import User from "../model/clientModel.js";
 
-const authFreelancer = async (req, res, next) => {
+export const authFreelancer = async (req, res, next) => {
   const authHeader = req.headers.authorization;
   if (!authHeader?.startsWith("Bearer ")) {
     return res.status(401).json({ message: "No token provided" });
@@ -32,4 +32,3 @@ const authFreelancer = async (req, res, next) => {
   }
 };
 
-module.exports = { authFreelancer };

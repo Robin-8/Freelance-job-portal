@@ -1,7 +1,7 @@
-const express = require("express");
+import express from "express";
 const router = express.Router();
-const Chat = require("../model/chatModel");
-const { authUser } = require("../middileware/authMiddleware");
+import Chat  from "../model/chatModel.js";
+import { authUser } from "../middileware/authMiddleware.js";
 
 // Save message
 router.post("/send", authUser, async (req, res) => {
@@ -47,4 +47,4 @@ router.get("/admin/all", async (req, res) => {
   res.json(chats);
 });
 
-module.exports = router;
+export default router;

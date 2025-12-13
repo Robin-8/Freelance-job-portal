@@ -1,7 +1,7 @@
-const jwt = require("jsonwebtoken");
-const clientModel = require("../model/clientModel");
+import jwt  from "jsonwebtoken";
+import clientModel  from "../model/clientModel.js";
 
-const authClient = async (req, res, next) => {
+export const authClient = async (req, res, next) => {
   const authHeader = req.headers.authorization;
   if (!authHeader?.startsWith("Bearer ")) {
     return res.status(401).json({ message: "No token provided" });
@@ -34,4 +34,4 @@ const authClient = async (req, res, next) => {
   }
 };
 
-module.exports = { authClient };
+

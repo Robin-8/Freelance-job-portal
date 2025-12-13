@@ -1,11 +1,11 @@
-const express = require("express");
-const {
+import express  from "express";
+import {
   createOrder,
   verifyPayment,
   getClientTotalPayments,
   getClientPaymentSummary,
-} = require("../controllers/paymentController");
-const { authClient } = require("../middileware/clientMiddileware");
+}  from "../controllers/paymentController.js";
+import { authClient }  from "../middileware/clientMiddileware.js";
 
 const router = express.Router();
 
@@ -15,4 +15,5 @@ router.post("/verifyPayment", authClient, verifyPayment);
 router.get("/client/total", authClient, getClientTotalPayments);
 router.get("/client/summary", authClient, getClientPaymentSummary);
 
-module.exports = router;
+
+export default router;

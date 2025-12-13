@@ -1,41 +1,41 @@
-require("dotenv").config();
-const express = require("express");
-const connectDb = require("./config/db");
-const cors = require("cors");
-const http = require("http");
-const { Server } = require("socket.io");
+import dotenv from "dotenv";
+dotenv.config();
 
-const clientRoute = require("./routes/clientRoute");
-const adminRoute = require("./routes/adminRoute");
-const freeLanceRoute = require("./routes/freeLanceRoute");
-const chatRoutes = require("./routes/chatRoute");
-const paymentRoutes = require("./routes/paymentRoute");
+import express from "express";
+import connectDb from "./config/db.js";
+import cors from "cors";
+import http from "http";
+import { Server } from "socket.io";
+
+import clientRoute from "./routes/clientRoute.js";
+import adminRoute from "./routes/adminRoute.js";
+import freeLanceRoute from "./routes/freeLanceRoute.js";
+import chatRoutes from "./routes/chatRoute.js";
+import paymentRoutes from "./routes/paymentRoute.js";
+import imageKitRoutes from "./routes/imageRoute.js";
 
 const app = express();
 
 // Allowed frontend origins
 const allowedOrigins = [
-  "http://localhost:5173", // local dev
-  "https://freelacejobportal.netlify.app", // Netlify frontend
+  "http://localhost:5173",
+  "https://freelacejobportal.netlify.app",
 ];
 
-// 1. MIDDLEWARE: Request Body Parsers (placed before CORS is often safer)
+// Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-// 2. CORS Middleware: Simplified and Direct Origin/Method Configuration
 app.use(
   cors({
-    origin: allowedOrigins, // Directly uses the array of allowed origins
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"], // Explicitly allow all common methods, including OPTIONS (preflight)
+    origin: allowedOrigins,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
     credentials: true,
   })
 );
 
-// Create HTTP server for Socket.IO
+// Socket.IO setup
 const server = http.createServer(app);
-
-// Socket.IO setup (CORS configuration here is fine for Socket.IO)
 const io = new Server(server, {
   cors: {
     origin: allowedOrigins,
@@ -67,15 +67,11 @@ io.on("connection", (socket) => {
       message,
       timestamp: new Date(),
     });
-    console.log(`Message from ${senderId} to ${receiverId}`);
   });
 
   socket.on("disconnect", () => {
-    console.log("❌ User disconnected:", socket.id);
     for (let id in onlineUsers) {
-      if (onlineUsers[id] === socket.id) {
-        delete onlineUsers[id];
-      }
+      if (onlineUsers[id] === socket.id) delete onlineUsers[id];
     }
   });
 });
@@ -86,13 +82,12 @@ app.use("/api/admin", adminRoute);
 app.use("/api/freelancer", freeLanceRoute);
 app.use("/api/chat", chatRoutes);
 app.use("/api/payment", paymentRoutes);
-
-// Connect Database
+app.use("/api/images", imageKitRoutes);
+// Connect database
 connectDb();
 
 // Start server
 const PORT = process.env.PORT || 3000;
-
 server.listen(PORT, () => {
-  console.log(`🚀 Server + Socket.IO running on port ${PORT}`);
+  console.log(`🚀 Server running on port ${PORT}`);
 });
