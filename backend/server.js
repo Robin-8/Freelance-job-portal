@@ -16,30 +16,27 @@ import imageKitRoutes from "./routes/imageRoute.js";
 
 const app = express();
 
-// Allowed frontend origins
 const allowedOrigins = [
   "http://localhost:5173",
-  "freelance-job-portal-zeta.vercel.app"
+  "https://freelance-job-portal-woad.vercel.app",
 ];
 
-// Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
 app.use(
   cors({
     origin: allowedOrigins,
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
     credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
   })
 );
 
-// Socket.IO setup
 const server = http.createServer(app);
+
 const io = new Server(server, {
   cors: {
     origin: allowedOrigins,
-    methods: ["GET", "POST"],
     credentials: true,
   },
 });
@@ -47,16 +44,12 @@ const io = new Server(server, {
 let onlineUsers = {};
 
 io.on("connection", (socket) => {
-  console.log("⚡ User connected:", socket.id);
-
   socket.on("join", ({ userId }) => {
     onlineUsers[userId] = socket.id;
-    console.log("Online Users:", onlineUsers);
   });
 
   socket.on("join_room", (roomId) => {
     socket.join(roomId);
-    console.log(`User ${socket.id} joined room: ${roomId}`);
   });
 
   socket.on("send_message", ({ senderId, receiverId, message }) => {
@@ -76,18 +69,17 @@ io.on("connection", (socket) => {
   });
 });
 
-// API Routes
 app.use("/api/client", clientRoute);
 app.use("/api/admin", adminRoute);
 app.use("/api/freelancer", freeLanceRoute);
 app.use("/api/chat", chatRoutes);
 app.use("/api/payment", paymentRoutes);
 app.use("/api/images", imageKitRoutes);
-// Connect database
-connectDb();
 
-// Start server
 const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
+
+connectDb().then(() => {
+  server.listen(PORT, () => {
+    console.log(`🚀 Server running on port ${PORT}`);
+  });
 });
