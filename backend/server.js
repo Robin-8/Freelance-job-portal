@@ -71,7 +71,7 @@ io.on("connection", (socket) => {
 
 app.use("/api/client", clientRoute);
 app.use("/api/admin", adminRoute);
-app.use("/api/freelancer", freeLanceRoute);
+app.use("/api/freelancer",freeLanceRoute);
 app.use("/api/chat", chatRoutes);
 app.use("/api/payment", paymentRoutes);
 app.use("/api/images", imageKitRoutes);

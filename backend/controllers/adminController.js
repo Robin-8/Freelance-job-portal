@@ -111,29 +111,26 @@ export const deleteUsers = async (req, res) => {
 
 export const blockUsers = async (req, res) => {
   try {
-    const id = req.params.id;
-    const user = await clientModel.findById(id);
+    const user = await clientModel.findById(req.params.id);
 
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
 
-    const updatedUser = await clientModel.findByIdAndUpdate(
-      id,
-      { isBlocked: !user.isBlocked },
-      { new: true }
-    );
+    user.isBlocked = !user.isBlocked;
+    await user.save();
 
-    return res.status(200).json({
-      message: updatedUser.isBlocked
+    res.status(200).json({
+      message: user.isBlocked
         ? "User blocked successfully"
         : "User unblocked successfully",
-      user: updatedUser,
+      user,
     });
   } catch (error) {
-    return res.status(500).json({ message: "Server error", error });
+    res.status(500).json({ message: "Server error" });
   }
 };
+
 
 // ================= JOBS =================
 export const adminGetJobs = async (req, res) => {
@@ -209,6 +206,152 @@ export const deleteJob = async (req, res) => {
 
     return res.status(200).json({ message: "Job deleted successfully", job });
   } catch (error) {
+    return res.status(500).json({ message: "Internal server error", error });
+  }
+};
+
+export const getAdminTotalPayments = async (req, res) => {
+  try {
+    const result = await Payment.aggregate([
+      { $match: { status: "paid" } },
+      { $group: { _id: null, totalPaid: { $sum: "$amount" } } },
+    ]);
+
+    const total = result.length > 0 ? result[0].totalPaid : 0;
+    res.status(200).json({ total });
+  } catch (err) {
+    console.error("Admin total payments error:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+// 2️⃣ Freelancers Applied (all jobs)
+export const getAdminTotalFreelancersApplied = async (req, res) => {
+  try {
+    const jobs = await jobModel.find({ isDeleted: false }).select("_id");
+    const jobIds = jobs.map(j => j._id);
+
+    if (jobIds.length === 0) return res.status(200).json({ totalApplicants: 0 });
+
+    const totalApplicants = await proposalModel.countDocuments({ job: { $in: jobIds } });
+    res.status(200).json({ totalApplicants });
+  } catch (err) {
+    console.error("Admin total freelancers applied error:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+// 3️⃣ Jobs Posted (all jobs)
+export const getAdminJobsPosted = async (req, res) => {
+  try {
+    const jobsPosted = await jobModel.countDocuments({ isDeleted: false });
+    res.status(200).json({ jobsPosted });
+  } catch (err) {
+    console.error("Admin jobs posted error:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+// 4️⃣ Proposal Stats (applied / accepted / rejected)
+export const getAdminProposalStats = async (req, res) => {
+  try {
+    const jobs = await jobModel.find({ isDeleted: false }).select("_id");
+    const jobIds = jobs.map(j => j._id);
+
+    if (jobIds.length === 0) return res.status(200).json({ applied: 0, accepted: 0, rejected: 0 });
+
+    const proposalStats = await proposalModel.aggregate([
+      { $match: { job: { $in: jobIds } } },
+      { $group: { _id: "$status", count: { $sum: 1 } } },
+    ]);
+
+    let applied = 0, accepted = 0, rejected = 0;
+    proposalStats.forEach(stat => {
+      if (stat._id === "pending") applied = stat.count;
+      if (stat._id === "accepted") accepted = stat.count;
+      if (stat._id === "rejected") rejected = stat.count;
+    });
+
+    res.status(200).json({ applied, accepted, rejected });
+  } catch (err) {
+    console.error("Admin proposal stats error:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+// 5️⃣ Monthly Payments (for chart)
+export const getAdminMonthlyPayments = async (req, res) => {
+  try {
+    const year = new Date().getFullYear();
+
+    const monthlyResult = await Payment.aggregate([
+      { $match: { status: "paid", createdAt: { $gte: new Date(`${year}-01-01`), $lte: new Date(`${year}-12-31`) } } },
+      { $group: { _id: { month: { $month: "$createdAt" } }, amount: { $sum: "$amount" } } },
+      { $sort: { "_id.month": 1 } },
+    ]);
+
+    const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+    const monthly = Array(12).fill(0).map((_, i) => ({ month: months[i], amount: 0 }));
+    monthlyResult.forEach(m => { monthly[m._id.month - 1].amount = m.amount; });
+
+    res.status(200).json({ monthly });
+  } catch (err) {
+    console.error("Admin monthly payments error:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+ export const AdminAddJob = async (req, res) => {
+  const {
+    title,
+    description,
+    skillsRequired,
+    budgetType,
+    budget,
+    deadline,
+    postedBy,
+    place,
+  } = req.body;
+
+  try {
+    if (!title || !description || !budget || !deadline || !postedBy || !place) {
+      return res.status(400).json({
+        message:
+          "Please provide all required fields (title, description, budget, deadline, postedBy, place).",
+      });
+    }
+
+    if (!req.user || !req.user._id) {
+      return res
+        .status(401)
+        .json({ message: "User not found or unauthorized" });
+    }
+    const existingJob = await jobModel.findOne({
+      title: title.trim().toLowerCase(),
+      postedBy: postedBy,
+    });
+    if (existingJob) {
+      return res.status(409).json({
+        message: "A job with this title already exists!",
+      });
+    }
+
+    const newJob = await jobModel.create({
+      title: title.trim().toLowerCase(),
+      description,
+      skillsRequired,
+      budgetType,
+      budget,
+      deadline,
+      postedBy,
+      place: place,
+    });
+
+    return res
+      .status(201)
+      .json({ message: "Job created successfully", job: newJob });
+  } catch (error) {
+    console.error("Add Job Error:", error);
     return res.status(500).json({ message: "Internal server error", error });
   }
 };

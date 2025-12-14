@@ -1,8 +1,9 @@
-import jwt  from "jsonwebtoken";
-import clientModel  from "../model/clientModel.js";
+import jwt from "jsonwebtoken";
+import clientModel from "../model/clientModel.js";
 
 export const authClient = async (req, res, next) => {
   const authHeader = req.headers.authorization;
+
   if (!authHeader?.startsWith("Bearer ")) {
     return res.status(401).json({ message: "No token provided" });
   }
@@ -11,27 +12,34 @@ export const authClient = async (req, res, next) => {
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
     if (decoded.role !== "client") {
       return res
         .status(403)
-        .json({ message: "Access forbidden. Only Clients can post jobs." });
+        .json({ message: "Access forbidden. Only clients allowed." });
     }
-    const user = await clientModel.findById(decoded.id).select("-password");
 
-    if (!user) return res.status(404).json({ message: "User not found" });
+    const clientId = decoded.id || decoded.userId;
+
+    const user = await clientModel
+      .findById(clientId)
+      .select("-password");
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
     if (user.isBlocked) {
       return res
         .status(403)
         .json({ message: "Your account is blocked, contact support" });
     }
 
-    // keep both `req.user` and `req.client` for compatibility
     req.user = user;
     req.client = user;
+
     next();
   } catch (error) {
     return res.status(403).json({ message: "Invalid or expired token" });
   }
 };
-
-

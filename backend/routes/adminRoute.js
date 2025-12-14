@@ -10,7 +10,13 @@ import {
   editJobs, 
   updateJob, 
   deleteJob, 
-  getAllAdmins 
+  getAllAdmins,
+  getAdminTotalPayments, 
+  getAdminTotalFreelancersApplied, 
+  getAdminJobsPosted, 
+  getAdminProposalStats, 
+  getAdminMonthlyPayments, 
+  AdminAddJob
 } from '../controllers/adminController.js';
 import { authAdmin } from '../middileware/adminMIddileware.js';
 
@@ -22,10 +28,16 @@ router.get('/getUsers', authAdmin, getUsers);
 router.delete('/deleteUser', authAdmin, deleteUsers);
 router.put('/blockUser/:id', authAdmin, blockUsers);
 router.get('/getJobs', authAdmin, adminGetJobs);
+router.post('/adminAddJob',authAdmin,AdminAddJob)
 router.get('/getPreposal', authAdmin, getAllProposalsAdmin);
 router.get('/editJobs/:id', authAdmin, editJobs);
 router.put('/updateJob/:id', authAdmin, updateJob);
 router.delete('/deleteJob/:id', authAdmin, deleteJob);
 router.get('/getAllAdmins', getAllAdmins);
+router.get("/total-payments",authAdmin, getAdminTotalPayments);
+router.get("/freelancers-applied",authAdmin, getAdminTotalFreelancersApplied);
+router.get("/jobs-posted",authAdmin, getAdminJobsPosted);
+router.get("/proposal-stats",authAdmin, getAdminProposalStats);
+router.get("/monthly-payments",authAdmin, getAdminMonthlyPayments);
 
 export default router; 
