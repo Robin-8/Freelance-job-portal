@@ -1,6 +1,6 @@
 import React from "react";
 import "./App.css";
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import Layout from "./components/Layout";
 import ClientLogin from "./clientPages/ClientLogin";
 import FreelancerHome from "./freelancePages/FreelancerHome";
@@ -32,6 +32,7 @@ import ChatPage from "./chat/ChatPage";
 import Payment from "./payment/Payment";
 import ProtectedRoute from "./ProtectedRoute";
 import { Toaster } from "react-hot-toast";
+import AdminAddJob from "./adminPages/AdminAddJob";
 
 function App() {
   const { user } = useSelector((state) => state.client);
@@ -56,6 +57,10 @@ function App() {
       <Toaster position="top-right" />
       <Routes>
         <Route element={<Layout />}>
+          <Route
+            path="/"
+            element={<Navigate to="/freelancer/login" replace />}
+          />
           {/* Public routes */}
           <Route path="/freelancer/register" element={<FreelanceRegister />} />
           <Route path="/freelancer/login" element={<FreelanceLogin />} />
@@ -132,6 +137,7 @@ function App() {
           <Route path="/admin/home" element={<AdminHome />} />
           <Route path="/admin/login" element={<AdminLogin />} />
           <Route path="/admin/register" element={<AdminRegister />} />
+          <Route path="/admin/adminAddJob" element={<AdminAddJob />} />
           <Route path="/admin/userMgt" element={<AdminMgtUsers />} />
           <Route path="/admin/getAdminJobs" element={<AdminGetAllJobs />} />
           <Route path="/admin/getPreposals" element={<AdminGetPreposals />} />

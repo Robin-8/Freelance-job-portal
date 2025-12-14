@@ -1,8 +1,9 @@
 import { io } from "socket.io-client";
 
-const socket = io("https://freelance-backend-l5l2ji855-robin-shajis-projects.vercel.app", {
+const socket = io("https://freelance-job-portal-4.onrender.com", {
   transports: ["websocket"],
   withCredentials: true,
+  reconnection: true,
 });
 
 export default socket;

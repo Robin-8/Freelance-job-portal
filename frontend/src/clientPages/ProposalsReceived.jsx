@@ -3,6 +3,7 @@ import { User, FileText, Clock, IndianRupee } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import axiosInstance from "../api/axiosApi";
 import { useNavigate } from "react-router-dom";
+import toast, { Toaster } from "react-hot-toast";
 
 const ProposalsReceived = () => {
   const queryClient = useQueryClient();
@@ -29,8 +30,10 @@ const ProposalsReceived = () => {
       return res.data;
     },
     onSuccess: (data, variables) => {
+      // Refresh proposals list
       queryClient.invalidateQueries(["proposalsReceived"]);
 
+      // Navigate if accepted
       if (variables.status === "accepted") {
         const proposal = proposals.find(
           (p) => p._id === variables.preposalId
@@ -43,11 +46,19 @@ const ProposalsReceived = () => {
           },
         });
       }
+
+      // Show toast if rejected
+      if (variables.status === "rejected") {
+        toast.error("Proposal has been declined.");
+      }
     },
   });
 
   return (
     <div className="min-h-screen bg-gray-950 text-white px-6 py-10">
+      {/* Toast container */}
+      <Toaster position="top-right" reverseOrder={false} />
+
       {/* Header */}
       <div className="max-w-6xl mx-auto mb-10">
         <h1 className="text-3xl font-bold">Proposals Received</h1>
@@ -71,9 +82,7 @@ const ProposalsReceived = () => {
       {/* Empty State */}
       {!isLoading && proposals.length === 0 && (
         <div className="max-w-4xl mx-auto bg-gray-900 p-10 rounded-2xl text-center border border-gray-800">
-          <p className="text-gray-400 text-lg">
-            No proposals received yet.
-          </p>
+          <p className="text-gray-400 text-lg">No proposals received yet.</p>
         </div>
       )}
 
@@ -105,12 +114,8 @@ const ProposalsReceived = () => {
                   <User size={24} className="text-gray-400" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-semibold">
-                    {p.freelancer?.name}
-                  </h3>
-                  <p className="text-gray-400 text-sm">
-                    {p.freelancer?.email}
-                  </p>
+                  <h3 className="text-lg font-semibold">{p.freelancer?.name}</h3>
+                  <p className="text-gray-400 text-sm">{p.freelancer?.email}</p>
                 </div>
               </div>
 
@@ -128,10 +133,7 @@ const ProposalsReceived = () => {
               <div className="mt-6 flex gap-4">
                 <button
                   onClick={() =>
-                    updateMutation.mutate({
-                      preposalId: p._id,
-                      status: "accepted",
-                    })
+                    updateMutation.mutate({ preposalId: p._id, status: "accepted" })
                   }
                   className="flex-1 bg-green-600 py-3 rounded-xl text-white font-semibold hover:bg-green-700 transition"
                 >
@@ -140,10 +142,7 @@ const ProposalsReceived = () => {
 
                 <button
                   onClick={() =>
-                    updateMutation.mutate({
-                      preposalId: p._id,
-                      status: "rejected",
-                    })
+                    updateMutation.mutate({ preposalId: p._id, status: "rejected" })
                   }
                   className="flex-1 bg-red-600 py-3 rounded-xl text-white font-semibold hover:bg-red-700 transition"
                 >

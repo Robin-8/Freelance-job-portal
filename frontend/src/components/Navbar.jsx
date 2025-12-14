@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { LogOut, LayoutList, Briefcase, Users, Search, Menu, X } from "lucide-react";
 
 const NAV_LINKS = {
@@ -21,6 +21,7 @@ const NAV_LINKS = {
 
 const Navbar = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
 
   const userRole = localStorage.getItem("role");
@@ -34,10 +35,21 @@ const Navbar = () => {
 
   const isAuthenticated = !!localStorage.getItem("token");
 
+  // Determine which login to show based on current path
+  const currentPath = location.pathname;
+  let loginLink;
+  if (currentPath.startsWith("/freelancer")) {
+    loginLink = { name: "Freelancer Login", path: "/freelancer/login" };
+  } else if (currentPath.startsWith("/client")) {
+    loginLink = { name: "Client Login", path: "/client/login" };
+  } else {
+    // Default: show freelancer login
+    loginLink = { name: "Freelancer Login", path: "/freelancer/login" };
+  }
+
   return (
     <nav className="bg-gray-800 shadow-lg sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-
         <div className="flex justify-between items-center h-16">
 
           {/* LOGO */}
@@ -70,7 +82,16 @@ const Navbar = () => {
                 </Link>
               ))}
 
-            {isAuthenticated ? (
+            {!isAuthenticated && (
+              <Link
+                to={loginLink.path}
+                className="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm"
+              >
+                {loginLink.name}
+              </Link>
+            )}
+
+            {isAuthenticated && (
               <button
                 onClick={handleLogout}
                 className="bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded-md text-sm flex items-center"
@@ -78,27 +99,6 @@ const Navbar = () => {
                 <LogOut className="w-4 h-4 mr-2" />
                 Logout ({userRole})
               </button>
-            ) : (
-              <>
-                <Link
-                  to="/freelancer/login"
-                  className="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm"
-                >
-                  Freelancer Login
-                </Link>
-                <Link
-                  to="/client/login"
-                  className="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm"
-                >
-                  Client Login
-                </Link>
-                <Link
-                  to="/admin/login"
-                  className="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm"
-                >
-                  Admin Login
-                </Link>
-              </>
             )}
           </div>
         </div>
@@ -120,7 +120,17 @@ const Navbar = () => {
               </Link>
             ))}
 
-          {isAuthenticated ? (
+          {!isAuthenticated && (
+            <Link
+              to={loginLink.path}
+              onClick={() => setMenuOpen(false)}
+              className="block text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm"
+            >
+              {loginLink.name}
+            </Link>
+          )}
+
+          {isAuthenticated && (
             <button
               onClick={() => {
                 setMenuOpen(false);
@@ -131,30 +141,6 @@ const Navbar = () => {
               <LogOut className="w-4 h-4 mr-2" />
               Logout ({userRole})
             </button>
-          ) : (
-            <>
-              <Link
-                to="/freelancer/login"
-                onClick={() => setMenuOpen(false)}
-                className="block text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm"
-              >
-                Freelancer Login
-              </Link>
-              <Link
-                to="/client/login"
-                onClick={() => setMenuOpen(false)}
-                className="block text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm"
-              >
-                Client Login
-              </Link>
-              <Link
-                to="/admin/login"
-                onClick={() => setMenuOpen(false)}
-                className="block text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm"
-              >
-                Admin Login
-              </Link>
-            </>
           )}
         </div>
       )}

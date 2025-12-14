@@ -89,9 +89,7 @@ const ClientRegister = () => {
               placeholder="Enter your name"
             />
             {errors.name && (
-              <p className="text-red-400 text-xs mt-1">
-                {errors.name.message}
-              </p>
+              <p className="text-red-400 text-xs mt-1">{errors.name.message}</p>
             )}
           </div>
 
@@ -117,7 +115,13 @@ const ClientRegister = () => {
               type="password"
               {...register("password", {
                 required: "Password is required",
-                minLength: { value: 6, message: "Min 6 characters" },
+                minLength: { value: 8, message: "Minimum 8 characters" },
+                pattern: {
+                  value:
+                    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?&#]{8,}$/,
+                  message:
+                    "Password must include uppercase, lowercase, number, and special character",
+                },
               })}
               className="w-full bg-white/10 text-white border border-white/20 rounded-lg px-4 py-2 mt-1 focus:ring-2 focus:ring-green-500 outline-none"
               placeholder="Enter password"

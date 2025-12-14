@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useDispatch } from "react-redux";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import axiosInstance from "../api/axiosApi";
 import { registerSuccess } from "../slice/clientSlice";
 import toast from "react-hot-toast";
@@ -18,6 +18,7 @@ const FreelanceRegister = () => {
   } = useForm();
 
   const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   const profileImage = watch("profileImage");
   const [preview, setPreview] = useState(null);
@@ -60,7 +61,7 @@ const FreelanceRegister = () => {
 
       dispatch(registerSuccess({ user, token }));
       toast.success("Registration Successful!");
-
+      navigate("/freelancer/freelancerHome");
     } catch (error) {
       toast.error(error.response?.data?.message || "Registration failed");
     } finally {
@@ -70,21 +71,22 @@ const FreelanceRegister = () => {
 
   return (
     <div className="min-h-screen bg-[#0b0b0f] flex items-center justify-center px-4">
-
-      <div className="w-full max-w-md bg-[#111827]/60 backdrop-blur-xl border border-white/10 
-                      shadow-2xl rounded-3xl p-8 animate-fadeIn">
-
+      <div
+        className="w-full max-w-md bg-[#111827]/60 backdrop-blur-xl border border-white/10 
+                      shadow-2xl rounded-3xl p-8 animate-fadeIn"
+      >
         <h2 className="text-3xl font-bold text-center text-white mb-7 tracking-wide">
           Freelancer Registration
         </h2>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-
           {/* Full Name */}
           <div className="relative group">
             <label className="text-gray-300 text-sm">Full Name</label>
-            <div className="flex items-center bg-[#1f2937] rounded-xl border border-white/10 
-                            px-3 py-3 mt-1 group-focus-within:border-purple-500 transition">
+            <div
+              className="flex items-center bg-[#1f2937] rounded-xl border border-white/10 
+                            px-3 py-3 mt-1 group-focus-within:border-purple-500 transition"
+            >
               <User size={20} className="text-gray-400 mr-3" />
               <input
                 {...register("name", { required: "Name is required" })}
@@ -102,8 +104,10 @@ const FreelanceRegister = () => {
           {/* Email */}
           <div className="relative group">
             <label className="text-gray-300 text-sm">Email Address</label>
-            <div className="flex items-center bg-[#1f2937] rounded-xl border border-white/10 
-                            px-3 py-3 mt-1 group-focus-within:border-purple-500 transition">
+            <div
+              className="flex items-center bg-[#1f2937] rounded-xl border border-white/10 
+                            px-3 py-3 mt-1 group-focus-within:border-purple-500 transition"
+            >
               <Mail size={20} className="text-gray-400 mr-3" />
               <input
                 {...register("email", {
@@ -127,14 +131,22 @@ const FreelanceRegister = () => {
           {/* Password */}
           <div className="relative group">
             <label className="text-gray-300 text-sm">Password</label>
-            <div className="flex items-center bg-[#1f2937] rounded-xl border border-white/10 
-                            px-3 py-3 mt-1 group-focus-within:border-purple-500 transition">
+            <div
+              className="flex items-center bg-[#1f2937] rounded-xl border border-white/10 
+                            px-3 py-3 mt-1 group-focus-within:border-purple-500 transition"
+            >
               <Lock size={20} className="text-gray-400 mr-3" />
               <input
                 type="password"
                 {...register("password", {
                   required: "Password is required",
-                  minLength: { value: 6, message: "Minimum 6 characters required" },
+                  minLength: { value: 8, message: "Minimum 8 characters" },
+                  pattern: {
+                    value:
+                      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?&#]{8,}$/,
+                    message:
+                      "Password must include uppercase, lowercase, number, and special character",
+                  },
                 })}
                 className="bg-transparent text-white outline-none w-full"
                 placeholder="Enter your password"
@@ -149,10 +161,14 @@ const FreelanceRegister = () => {
 
           {/* Profile Image */}
           <div>
-            <label className="text-gray-300 text-sm">Profile Image (Optional)</label>
+            <label className="text-gray-300 text-sm">
+              Profile Image (Optional)
+            </label>
 
-            <div className="flex items-center bg-[#1f2937] border border-white/10 
-                            rounded-xl px-3 py-3 mt-1">
+            <div
+              className="flex items-center bg-[#1f2937] border border-white/10 
+                            rounded-xl px-3 py-3 mt-1"
+            >
               <ImageIcon size={20} className="text-gray-400 mr-3" />
               <input
                 type="file"
@@ -184,13 +200,20 @@ const FreelanceRegister = () => {
               font-semibold shadow-lg hover:opacity-90 transition-all 
               disabled:opacity-60 disabled:cursor-not-allowed"
           >
-            {loading ? <Loader2 className="animate-spin" size={22} /> : "Register"}
+            {loading ? (
+              <Loader2 className="animate-spin" size={22} />
+            ) : (
+              "Register"
+            )}
           </button>
         </form>
 
         <p className="text-center text-gray-400 mt-6 text-sm">
           Already a user?{" "}
-          <Link className="text-purple-400 hover:underline font-semibold" to="/freelancer/login">
+          <Link
+            className="text-purple-400 hover:underline font-semibold"
+            to="/freelancer/login"
+          >
             Login here
           </Link>
         </p>

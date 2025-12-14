@@ -60,16 +60,26 @@ function AdminRegister() {
             <User size={24} className="text-white" />
           </div>
           <div>
-            <h1 className="text-2xl font-semibold text-white">Admin Register</h1>
-            <p className="text-sm text-gray-400">Create an admin account for dashboard access</p>
+            <h1 className="text-2xl font-semibold text-white">
+              Admin Register
+            </h1>
+            <p className="text-sm text-gray-400">
+              Create an admin account for dashboard access
+            </p>
           </div>
         </div>
 
         {/* Form */}
-        <form className="space-y-5" onSubmit={handleSubmit(onSubmit)} noValidate>
+        <form
+          className="space-y-5"
+          onSubmit={handleSubmit(onSubmit)}
+          noValidate
+        >
           {/* Name */}
           <div>
-            <label className="block text-sm text-gray-300 mb-2">Full name</label>
+            <label className="block text-sm text-gray-300 mb-2">
+              Full name
+            </label>
             <div className="flex items-center gap-3 bg-[#0f1720] border border-white/6 rounded-xl px-3 py-2">
               <User size={18} className="text-gray-400" />
               <input
@@ -79,7 +89,9 @@ function AdminRegister() {
                 className="bg-transparent outline-none w-full text-white placeholder:text-gray-500"
               />
             </div>
-            {errors.name && <p className="text-red-400 text-sm mt-1">{errors.name.message}</p>}
+            {errors.name && (
+              <p className="text-red-400 text-sm mt-1">{errors.name.message}</p>
+            )}
           </div>
 
           {/* Email */}
@@ -92,12 +104,19 @@ function AdminRegister() {
                 placeholder="admin@example.com"
                 {...register("email", {
                   required: "Email is required",
-                  pattern: { value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/, message: "Enter a valid email" },
+                  pattern: {
+                    value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                    message: "Enter a valid email",
+                  },
                 })}
                 className="bg-transparent outline-none w-full text-white placeholder:text-gray-500"
               />
             </div>
-            {errors.email && <p className="text-red-400 text-sm mt-1">{errors.email.message}</p>}
+            {errors.email && (
+              <p className="text-red-400 text-sm mt-1">
+                {errors.email.message}
+              </p>
+            )}
           </div>
 
           {/* Password */}
@@ -110,13 +129,21 @@ function AdminRegister() {
                 placeholder="Create a strong password"
                 {...register("password", {
                   required: "Password is required",
-                  minLength: { value: 6, message: "Minimum 6 characters" },
+                  minLength: { value: 8, message: "Minimum 8 characters" },
+                  pattern: {
+                    value:
+                      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?&#]{8,}$/,
+                    message:
+                      "Password must include uppercase, lowercase, number, and special character",
+                  },
                 })}
                 className="bg-transparent outline-none w-full text-white placeholder:text-gray-500"
               />
             </div>
             {errors.password && (
-              <p className="text-red-400 text-sm mt-1">{errors.password.message}</p>
+              <p className="text-red-400 text-sm mt-1">
+                {errors.password.message}
+              </p>
             )}
           </div>
 
@@ -125,7 +152,11 @@ function AdminRegister() {
             type="submit"
             disabled={adminRegMutation.isLoading}
             className={`w-full flex items-center justify-center gap-3 py-3 rounded-xl text-white font-semibold 
-                        transition transform ${adminRegMutation.isLoading ? "opacity-60 cursor-not-allowed" : "hover:scale-[1.02]"} 
+                        transition transform ${
+                          adminRegMutation.isLoading
+                            ? "opacity-60 cursor-not-allowed"
+                            : "hover:scale-[1.02]"
+                        } 
                         bg-gradient-to-r from-[#4c00ff] to-[#00a3ff] shadow-lg`}
           >
             {adminRegMutation.isLoading ? (
@@ -143,7 +174,10 @@ function AdminRegister() {
         <div className="mt-6 text-center">
           <p className="text-sm text-gray-400">
             Already have an account?{" "}
-            <Link to="/admin/login" className="text-[#7dd3fc] font-medium hover:underline">
+            <Link
+              to="/admin/login"
+              className="text-[#7dd3fc] font-medium hover:underline"
+            >
               Login
             </Link>
           </p>
