@@ -1,8 +1,8 @@
-import bcrypt  from "bcrypt";
+import bcrypt from "bcrypt";
 import clientModel from "../model/clientModel.js";
 import jobModel from "../model/jobModel.js";
 import { generateToken } from "../jwt/jwt.js";
-import proposalModel  from "../model/proposalModel.js";
+import proposalModel from "../model/proposalModel.js";
 
 // ==================== REGISTER ====================
 export const register = async (req, res) => {
@@ -77,7 +77,7 @@ export const login = async (req, res) => {
 };
 
 // ==================== ADD JOB ====================
- export const addJob = async (req, res) => {
+export const addJob = async (req, res) => {
   const {
     title,
     description,
@@ -85,27 +85,27 @@ export const login = async (req, res) => {
     budgetType,
     budget,
     deadline,
-    postedBy,
     place,
   } = req.body;
 
   try {
-    if (!title || !description || !budget || !deadline || !postedBy || !place) {
+    if (!title || !description || !budget || !deadline || !place) {
       return res.status(400).json({
-        message:
-          "Please provide all required fields (title, description, budget, deadline, postedBy, place).",
+        message: "Please provide all required fields",
       });
     }
 
-    if (!req.user || !req.user._id) {
-      return res
-        .status(401)
-        .json({ message: "User not found or unauthorized" });
+    if (!req.client || !req.client._id) {
+      return res.status(401).json({
+        message: "User not found or unauthorized",
+      });
     }
+
     const existingJob = await jobModel.findOne({
       title: title.trim().toLowerCase(),
-      postedBy: postedBy,
+      postedBy: req.client._id,
     });
+
     if (existingJob) {
       return res.status(409).json({
         message: "A job with this title already exists!",
@@ -119,18 +119,20 @@ export const login = async (req, res) => {
       budgetType,
       budget,
       deadline,
-      postedBy,
-      place: place,
+      postedBy: req.client._id,
+      place,
     });
 
-    return res
-      .status(201)
-      .json({ message: "Job created successfully", job: newJob });
+    return res.status(201).json({
+      message: "Job created successfully",
+      job: newJob,
+    });
   } catch (error) {
     console.error("Add Job Error:", error);
-    return res.status(500).json({ message: "Internal server error", error });
+    return res.status(500).json({ message: "Internal server error" });
   }
 };
+
 
 export const updateJob = async (req, res) => {
   const { id } = req.params;
@@ -176,7 +178,7 @@ export const deleteJob = async (req, res) => {
   }
 };
 
- export const getAllJobs = async (req, res) => {
+export const getAllJobs = async (req, res) => {
   try {
     const jobs = await jobModel.find({ isDeleted: false });
     res.status(200).json({ jobs });
@@ -198,7 +200,7 @@ export const proposalReceived = async (req, res) => {
       return res.status(200).json({ message: "No jobs found", proposals: [] });
     }
 
-    const jobIds = jobs.map(job => job._id);
+    const jobIds = jobs.map((job) => job._id);
 
     const proposals = await proposalModel
       .find({ job: { $in: jobIds } })
@@ -212,9 +214,6 @@ export const proposalReceived = async (req, res) => {
     return res.status(500).json({ message: "Internal server error" });
   }
 };
-
-
-
 
 export const proposalStatus = async (req, res) => {
   const { preposalId } = req.params;
@@ -361,7 +360,7 @@ export const getClientProposalStats = async (req, res) => {
   }
 };
 
-export default  {
+export default {
   register,
   login,
   addJob,
