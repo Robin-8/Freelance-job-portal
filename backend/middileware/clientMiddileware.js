@@ -16,7 +16,16 @@ export const authClient = async (req, res, next) => {
       return res.status(403).json({ message: "Forbidden" });
     }
 
-    const client = await clientModel.findById(decoded.id).select("-password");
+    // 🔥 FIX HERE
+    const clientId = decoded.id || decoded._id || decoded.userId;
+
+    if (!clientId) {
+      return res.status(401).json({ message: "Invalid token payload" });
+    }
+
+    const client = await clientModel
+      .findById(clientId)
+      .select("-password");
 
     if (!client) {
       return res.status(404).json({ message: "Client not found" });
@@ -28,4 +37,5 @@ export const authClient = async (req, res, next) => {
     return res.status(403).json({ message: "Invalid token" });
   }
 };
+
 
