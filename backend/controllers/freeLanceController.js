@@ -3,66 +3,61 @@ import { generateToken } from "../jwt/jwt.js";
 import User from "../model/clientModel.js";
 import jobModel from "../model/jobModel.js";
 import proposalModel from "../model/proposalModel.js";
-import imagekit from "../utils/imagekit.js";
+import cloudinary from "../config/cloudinary.js";
 
 // ================= REGISTER =================
 export const register = async (req, res) => {
-  const { name, email, password } = req.body;
+  const { name, email, password, role } = req.body;
   const file = req.file;
 
   try {
+    console.log("req.file:", file);
+
+    // Check if email exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
-      return res
-        .status(400)
-        .json({ message: "Freelance already registered with this email" });
+      return res.status(400).json({ message: "Email already registered" });
     }
 
     let profileImageUrl = "https://via.placeholder.com/150?text=Profile";
 
-    if (file) {
-      try {
-        const base64File = file.buffer.toString("base64");
-        const fileName = `${name}_${Date.now()}`;
-
-        const uploadResult = await imagekit.upload({
-          file: base64File,
-          fileName,
-          folder: "/freelancer-profiles",
-          useUniqueFileName: true,
-        });
-
-        profileImageUrl = uploadResult.url;
-      } catch (uploadError) {
-        console.error("ImageKit Upload Error:", uploadError);
-      }
+    // Upload to Cloudinary
+    if (file && file.buffer) {
+      const base64 = `data:${file.mimetype};base64,${file.buffer.toString("base64")}`;
+      const uploadResult = await cloudinary.uploader.upload(base64, {
+        folder: "freelancer-profiles",
+        resource_type: "image",
+      });
+      profileImageUrl = uploadResult.secure_url;
     }
 
+    // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const newUser = new User({
+    // Create user
+    const newUser = await User.create({
       name,
       email,
       password: hashedPassword,
-      role: req.body.role || "freelancer",
+      role: role || "freelancer",
       profileImage: profileImageUrl,
+      balance: 0,
     });
 
-    await newUser.save();
-
-    const token = await generateToken(newUser);
+    const token = generateToken(newUser);
 
     const userResponse = newUser.toObject();
     delete userResponse.password;
 
     return res.status(201).json({
-      message: "Freelance registered successfully",
+      message: "Freelancer registered successfully",
       user: userResponse,
       token,
     });
+
   } catch (error) {
     console.error("Register Error:", error);
-    res.status(500).json({ message: "Server error", error: error.message });
+    return res.status(500).json({ message: "Server error" });
   }
 };
 
@@ -160,10 +155,7 @@ export const applyJobs = async (req, res) => {
       bidAmount,
     });
 
-    await jobModel.updateOne(
-      { _id: jobId },
-      { $inc: { proposalsCount: 1 } }
-    );
+    await jobModel.updateOne({ _id: jobId }, { $inc: { proposalsCount: 1 } });
 
     return res.status(200).json({ message: "Applied successfully", proposal });
   } catch (error) {
@@ -223,11 +215,9 @@ export const updateProfile = async (req, res) => {
       updateData.password = await bcrypt.hash(updateData.password, 10);
     }
 
-    const update = await User.findByIdAndUpdate(
-      req.user._id,
-      updateData,
-      { new: true }
-    ).select("-password");
+    const update = await User.findByIdAndUpdate(req.user._id, updateData, {
+      new: true,
+    }).select("-password");
 
     return res.status(200).json({
       message: "Profile updated successfully",

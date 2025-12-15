@@ -1,6 +1,5 @@
 import dotenv from "dotenv";
 dotenv.config();
-
 import express from "express";
 import connectDb from "./config/db.js";
 import cors from "cors";
@@ -12,7 +11,7 @@ import adminRoute from "./routes/adminRoute.js";
 import freeLanceRoute from "./routes/freeLanceRoute.js";
 import chatRoutes from "./routes/chatRoute.js";
 import paymentRoutes from "./routes/paymentRoute.js";
-import imageKitRoutes from "./routes/imageRoute.js";
+import fs from "fs";
 
 const app = express();
 
@@ -74,12 +73,13 @@ app.use("/api/admin", adminRoute);
 app.use("/api/freelancer",freeLanceRoute);
 app.use("/api/chat", chatRoutes);
 app.use("/api/payment", paymentRoutes);
-app.use("/api/images", imageKitRoutes);
 
-const PORT = process.env.PORT || 3000;
+
+const PORT = process.env.PORT || 3000; 
 
 connectDb().then(() => {
   server.listen(PORT, () => {
     console.log(`🚀 Server running on port ${PORT}`);
   });
 });
+

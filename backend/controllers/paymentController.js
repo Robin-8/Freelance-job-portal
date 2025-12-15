@@ -2,11 +2,8 @@ import Razorpay from "razorpay";
 import crypto from "crypto";
 import mongoose from "mongoose";
 import Payment from "../model/paymentModel.js";
+import instance from "../config/razorPayInstance.js";
 
-const instance = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID,
-  key_secret: process.env.RAZORPAY_KEY_SECRET,
-});
 
 // 1. Create Razorpay Order
 export const createOrder = async (req, res) => {
@@ -27,21 +24,17 @@ export const createOrder = async (req, res) => {
       status: "created",
     });
 
-    return res.status(200).json({ order });
+    res.status(200).json({ order });
   } catch (err) {
-    console.log(err);
-    return res.status(500).json({ message: "Order creation failed" });
+    console.error("CREATE ORDER ERROR:", err);
+    res.status(500).json({ message: "Order creation failed" });
   }
 };
 
-// 2. Verify Razorpay Payment
+// 2. Verify Payment
 export const verifyPayment = async (req, res) => {
   try {
-    const {
-      razorpay_order_id,
-      razorpay_payment_id,
-      razorpay_signature,
-    } = req.body;
+    const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
 
     const body = `${razorpay_order_id}|${razorpay_payment_id}`;
 
@@ -56,16 +49,13 @@ export const verifyPayment = async (req, res) => {
 
     await Payment.findOneAndUpdate(
       { orderId: razorpay_order_id },
-      {
-        paymentId: razorpay_payment_id,
-        status: "paid",
-      }
+      { paymentId: razorpay_payment_id, status: "paid" }
     );
 
-    return res.status(200).json({ message: "Payment verified" });
-  } catch (error) {
-    console.log("VERIFY ERROR:", error);
-    return res.status(500).json({ message: "Server error" });
+    res.status(200).json({ message: "Payment verified" });
+  } catch (err) {
+    console.error("VERIFY PAYMENT ERROR:", err);
+    res.status(500).json({ message: "Server error" });
   }
 };
 
