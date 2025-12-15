@@ -18,13 +18,13 @@ const ProposalsReceived = () => {
     },
   });
 
-  const proposals = data?.preposal || [];
+  const proposals = data?.proposals || [];
 
   // Mutation to update proposal status
   const updateMutation = useMutation({
-    mutationFn: async ({ preposalId, status }) => {
+    mutationFn: async ({ proposalId, status }) => {
       const res = await axiosInstance.patch(
-        `/client/updateStatus/${preposalId}`,
+        `/client/updateStatus/${proposalId}`,
         { status }
       );
       return res.data;
@@ -35,13 +35,11 @@ const ProposalsReceived = () => {
 
       // Navigate if accepted
       if (variables.status === "accepted") {
-        const proposal = proposals.find(
-          (p) => p._id === variables.preposalId
-        );
+        const proposal = proposals.find((p) => p._id === variables.proposalId);
 
         navigate("/client/payment", {
           state: {
-            preposalId: variables.preposalId,
+            proposalId: variables.proposalId,
             amount: proposal?.bidAmount,
           },
         });
@@ -56,7 +54,6 @@ const ProposalsReceived = () => {
 
   return (
     <div className="min-h-screen bg-gray-950 text-white px-6 py-10">
-      {/* Toast container */}
       <Toaster position="top-right" reverseOrder={false} />
 
       {/* Header */}
@@ -133,7 +130,7 @@ const ProposalsReceived = () => {
               <div className="mt-6 flex gap-4">
                 <button
                   onClick={() =>
-                    updateMutation.mutate({ preposalId: p._id, status: "accepted" })
+                    updateMutation.mutate({ proposalId: p._id, status: "accepted" })
                   }
                   className="flex-1 bg-green-600 py-3 rounded-xl text-white font-semibold hover:bg-green-700 transition"
                 >
@@ -142,7 +139,7 @@ const ProposalsReceived = () => {
 
                 <button
                   onClick={() =>
-                    updateMutation.mutate({ preposalId: p._id, status: "rejected" })
+                    updateMutation.mutate({ proposalId: p._id, status: "rejected" })
                   }
                   className="flex-1 bg-red-600 py-3 rounded-xl text-white font-semibold hover:bg-red-700 transition"
                 >
