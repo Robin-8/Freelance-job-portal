@@ -11,7 +11,7 @@ import adminRoute from "./routes/adminRoute.js";
 import freeLanceRoute from "./routes/freeLanceRoute.js";
 import chatRoutes from "./routes/chatRoute.js";
 import paymentRoutes from "./routes/paymentRoute.js";
-import fs from "fs";
+
 
 const app = express();
 

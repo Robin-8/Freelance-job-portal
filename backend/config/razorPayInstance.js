@@ -1,12 +1,4 @@
-// backend/config/razorpayInstance.js
 import Razorpay from "razorpay";
-import dotenv from "dotenv";
-
-dotenv.config();
-
-if (!process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET) {
-  throw new Error("Razorpay keys are missing in .env");
-}
 
 const instance = new Razorpay({
   key_id: process.env.RAZORPAY_KEY_ID,

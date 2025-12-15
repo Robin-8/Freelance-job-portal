@@ -5,14 +5,13 @@ import Payment from "../model/paymentModel.js";
 import instance from "../config/razorPayInstance.js";
 
 
-// 1. Create Razorpay Order
 export const createOrder = async (req, res) => {
   try {
     const { amount, jobId } = req.body;
-    const userId = req.client.id;
+    const userId = req.client._id;
 
     const order = await instance.orders.create({
-      amount: amount * 100, // paise
+      amount: Number(amount) * 100,
       currency: "INR",
     });
 
@@ -27,14 +26,17 @@ export const createOrder = async (req, res) => {
     res.status(200).json({ order });
   } catch (err) {
     console.error("CREATE ORDER ERROR:", err);
-    res.status(500).json({ message: "Order creation failed" });
+    res.status(500).json({ message: err.message });
   }
 };
 
-// 2. Verify Payment
 export const verifyPayment = async (req, res) => {
   try {
-    const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
+    const {
+      razorpay_order_id,
+      razorpay_payment_id,
+      razorpay_signature,
+    } = req.body;
 
     const body = `${razorpay_order_id}|${razorpay_payment_id}`;
 
@@ -54,20 +56,19 @@ export const verifyPayment = async (req, res) => {
 
     res.status(200).json({ message: "Payment verified" });
   } catch (err) {
-    console.error("VERIFY PAYMENT ERROR:", err);
-    res.status(500).json({ message: "Server error" });
+    console.error("VERIFY ERROR:", err);
+    res.status(500).json({ message: err.message });
   }
 };
 
-// 3. Client Total Payment
 export const getClientTotalPayments = async (req, res) => {
   try {
-    const clientId = req.client.id;
+    const clientId = req.client._id;
 
     const result = await Payment.aggregate([
       {
         $match: {
-          userId: new mongoose.Types.ObjectId(clientId),
+          userId: clientId,
           status: "paid",
         },
       },
@@ -79,37 +80,23 @@ export const getClientTotalPayments = async (req, res) => {
       },
     ]);
 
-    return res.status(200).json({
+    res.status(200).json({
       total: result.length ? result[0].totalPaid : 0,
     });
   } catch (err) {
-    console.log(err);
-    return res
-      .status(500)
-      .json({ message: "Failed to fetch total payments" });
+    res.status(500).json({ message: err.message });
   }
 };
 
-// 4. Client Payment Summary (Monthly + Total)
 export const getClientPaymentSummary = async (req, res) => {
   try {
-    const clientId = req.client.id;
+    const clientId = req.client._id;
     const year = new Date().getFullYear();
-
-    const totalResult = await Payment.aggregate([
-      {
-        $match: {
-          userId: new mongoose.Types.ObjectId(clientId),
-          status: "paid",
-        },
-      },
-      { $group: { _id: null, total: { $sum: "$amount" } } },
-    ]);
 
     const monthlyResult = await Payment.aggregate([
       {
         $match: {
-          userId: new mongoose.Types.ObjectId(clientId),
+          userId: clientId,
           status: "paid",
           createdAt: {
             $gte: new Date(`${year}-01-01`),
@@ -123,29 +110,10 @@ export const getClientPaymentSummary = async (req, res) => {
           amount: { $sum: "$amount" },
         },
       },
-      { $sort: { "_id.month": 1 } },
     ]);
 
-    const months = [
-      "Jan","Feb","Mar","Apr","May","Jun",
-      "Jul","Aug","Sep","Oct","Nov","Dec",
-    ];
-
-    const monthly = Array.from({ length: 12 }, (_, i) => ({
-      month: months[i],
-      amount: 0,
-    }));
-
-    monthlyResult.forEach((m) => {
-      monthly[m._id.month - 1].amount = m.amount;
-    });
-
-    return res.status(200).json({
-      totalAmount: totalResult.length ? totalResult[0].total : 0,
-      monthly,
-    });
+    res.status(200).json({ monthlyResult });
   } catch (err) {
-    console.log(err);
-    return res.status(500).json({ message: "Error fetching summary" });
+    res.status(500).json({ message: err.message });
   }
 };
