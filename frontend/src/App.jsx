@@ -132,6 +132,7 @@ function App() {
           <Route path="/client/all" element={<ClientGetJobs />} />
           <Route path="/client/editJobs/:id" element={<EditJobs />} />
           <Route path="/client/payment" element={<Payment />} />
+          <Route path="/client/chat" element={<ChatPage />} />
 
           {/* Admin */}
           <Route path="/admin/home" element={<AdminHome />} />

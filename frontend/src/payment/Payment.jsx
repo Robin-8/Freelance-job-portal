@@ -1,3 +1,4 @@
+import React from "react";
 import { useLocation } from "react-router-dom";
 import { useSelector } from "react-redux";
 import axiosInstance from "../api/axiosApi";
@@ -17,15 +18,15 @@ const Payment = () => {
       // 1. Create Order (Backend)
       const { data } = await axiosInstance.post("/payment/createOrder", {
         amount,
-        userId: user._id,
         jobId,
+        userId: user._id, 
       });
 
       const order = data.order;
 
       // 2. Razorpay Options
       const options = {
-        key: import.meta.env.VITE_RAZORPAY_KEY_ID,
+        key: import.meta.env.VITE_RAZORPAY_KEY_ID, // Vite env variable
         amount: order.amount,
         currency: order.currency,
         order_id: order.id,
@@ -50,7 +51,7 @@ const Payment = () => {
           name: user.name,
           email: user.email,
         },
-        theme: { color: "#111827" }, // Dark theme
+        theme: { color: "#111827" }, // dark theme
       };
 
       const razorpayInstance = new window.Razorpay(options);
