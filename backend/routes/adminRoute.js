@@ -28,7 +28,7 @@ router.get('/getUsers', authAdmin, getUsers);
 router.delete('/deleteUser', authAdmin, deleteUsers);
 router.put('/blockUser/:id', authAdmin, blockUsers);
 router.get('/getJobs', authAdmin, adminGetJobs);
-router.post('/adminAddJob',authAdmin,AdminAddJob)
+router.post("/addJob", authAdmin, AdminAddJob);
 router.get('/getPreposal', authAdmin, getAllProposalsAdmin);
 router.get('/editJobs/:id', authAdmin, editJobs);
 router.put('/updateJob/:id', authAdmin, updateJob);

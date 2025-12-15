@@ -301,7 +301,7 @@ export const getAdminMonthlyPayments = async (req, res) => {
   }
 };
 
- export const AdminAddJob = async (req, res) => {
+export const AdminAddJob = async (req, res) => {
   const {
     title,
     description,
@@ -309,15 +309,13 @@ export const getAdminMonthlyPayments = async (req, res) => {
     budgetType,
     budget,
     deadline,
-    postedBy,
     place,
   } = req.body;
 
   try {
-    if (!title || !description || !budget || !deadline || !postedBy || !place) {
+    if (!title || !description || !budget || !deadline || !place) {
       return res.status(400).json({
-        message:
-          "Please provide all required fields (title, description, budget, deadline, postedBy, place).",
+        message: "Please provide all required fields",
       });
     }
 
@@ -326,10 +324,12 @@ export const getAdminMonthlyPayments = async (req, res) => {
         .status(401)
         .json({ message: "User not found or unauthorized" });
     }
+
     const existingJob = await jobModel.findOne({
       title: title.trim().toLowerCase(),
-      postedBy: postedBy,
+      postedBy: req.user._id,
     });
+
     if (existingJob) {
       return res.status(409).json({
         message: "A job with this title already exists!",
@@ -343,15 +343,16 @@ export const getAdminMonthlyPayments = async (req, res) => {
       budgetType,
       budget,
       deadline,
-      postedBy,
-      place: place,
+      postedBy: req.user._id, // 🔥 from token
+      place,
     });
 
-    return res
-      .status(201)
-      .json({ message: "Job created successfully", job: newJob });
+    return res.status(201).json({
+      message: "Job created successfully",
+      job: newJob,
+    });
   } catch (error) {
-    console.error("Add Job Error:", error);
-    return res.status(500).json({ message: "Internal server error", error });
+    console.error("Admin Add Job Error:", error);
+    return res.status(500).json({ message: "Internal server error" });
   }
 };
