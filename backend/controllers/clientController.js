@@ -186,31 +186,35 @@ export const deleteJob = async (req, res) => {
   }
 };
 
- export const proposalReceived = async (req, res) => {
+export const proposalReceived = async (req, res) => {
   try {
-    const jobs = await jobModel.find({ postedBy: req.user._id });
-    if (!jobs || jobs.length < 0) {
-      return res.status(403).json({ message: "job not found" });
+    if (!req.client || !req.client._id) {
+      return res.status(401).json({ message: "Unauthorized" });
     }
-    const jobId = jobs.map((job) => job._id);
 
-    const preposal = await proposalModel
-      .find({ job: { $in: jobId } })
-      .populate("freelancer", "name email ")
+    const jobs = await jobModel.find({ postedBy: req.client._id });
+
+    if (!jobs || jobs.length === 0) {
+      return res.status(200).json({ message: "No jobs found", proposals: [] });
+    }
+
+    const jobIds = jobs.map(job => job._id);
+
+    const proposals = await proposalModel
+      .find({ job: { $in: jobIds } })
+      .populate("freelancer", "name email")
       .populate("job", "title budget deadline")
       .sort({ createdAt: -1 });
 
-    if (preposal.length == 0) {
-      return res.status(401).json({ message: "no preposal" });
-    }
-    return res
-      .status(200)
-      .json({ message: "Preposal fetched successfully", preposal });
-  } catch (error) {
-    console.log(error);
-    return res.status(500).json({ message: "internal server error", error });
+    return res.status(200).json({ message: "Proposals fetched", proposals });
+  } catch (err) {
+    console.error("proposalReceived error:", err);
+    return res.status(500).json({ message: "Internal server error" });
   }
 };
+
+
+
 
 export const proposalStatus = async (req, res) => {
   const { preposalId } = req.params;
