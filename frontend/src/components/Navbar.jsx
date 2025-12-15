@@ -113,7 +113,7 @@ const Navbar = () => {
                 key={link.name}
                 to={link.path}
                 onClick={() => setMenuOpen(false)}
-                className="block text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm flex items-center"
+                className="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm flex items-center"
               >
                 <link.icon className="w-4 h-4 mr-2" />
                 {link.name}

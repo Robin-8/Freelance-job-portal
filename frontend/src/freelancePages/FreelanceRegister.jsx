@@ -1,68 +1,62 @@
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
+import { useNavigate, Link } from "react-router-dom";
 import { useDispatch } from "react-redux";
-import { Link, useNavigate } from "react-router-dom";
 import axiosInstance from "../api/axiosApi";
 import { registerSuccess } from "../slice/clientSlice";
 import toast from "react-hot-toast";
 
-// Lucide icons
+// Icons
 import { User, Mail, Lock, ImageIcon, Loader2 } from "lucide-react";
 
 const FreelanceRegister = () => {
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-    watch,
-  } = useForm();
-
+  const { register, handleSubmit, watch, formState: { errors } } = useForm();
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const profileImage = watch("profileImage");
   const [preview, setPreview] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  // Image Preview
+  const profileImage = watch("profileImage");
+
+  // Image preview
   useEffect(() => {
     if (profileImage && profileImage.length > 0) {
-      const file = profileImage[0];
-      if (preview) URL.revokeObjectURL(preview);
-      setPreview(URL.createObjectURL(file));
+      const objectUrl = URL.createObjectURL(profileImage[0]);
+      setPreview(objectUrl);
+
+      return () => URL.revokeObjectURL(objectUrl);
     } else {
       setPreview(null);
     }
-
-    return () => {
-      if (preview) URL.revokeObjectURL(preview);
-    };
   }, [profileImage]);
 
-  const onSubmit = async (formData) => {
+  const onSubmit = async (data) => {
     try {
       setLoading(true);
 
-      const dataToSend = new FormData();
-      dataToSend.append("name", formData.name);
-      dataToSend.append("email", formData.email);
-      dataToSend.append("password", formData.password);
-      dataToSend.append("role", "freelancer");
+      // Prepare FormData
+      const formData = new FormData();
+      formData.append("name", data.name);
+      formData.append("email", data.email);
+      formData.append("password", data.password);
+      formData.append("role", "freelancer");
 
-      if (formData.profileImage?.length > 0) {
-        dataToSend.append("profileImage", formData.profileImage[0]);
+      if (data.profileImage?.length > 0) {
+        formData.append("profileImage", data.profileImage[0]);
       }
 
-      const res = await axiosInstance.post("/freelancer/register", dataToSend, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
+      // Send request to backend
+      const res = await axiosInstance.post("/freelancer/register", formData);
 
       const { user, token } = res.data;
 
       dispatch(registerSuccess({ user, token }));
-      toast.success("Registration Successful!");
+      toast.success("Registration successful!");
       navigate("/freelancer/freelancerHome");
+
     } catch (error) {
+      console.error("Registration Error:", error.response?.data || error.message);
       toast.error(error.response?.data?.message || "Registration failed");
     } finally {
       setLoading(false);
@@ -70,151 +64,90 @@ const FreelanceRegister = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#0b0b0f] flex items-center justify-center px-4">
-      <div
-        className="w-full max-w-md bg-[#111827]/60 backdrop-blur-xl border border-white/10 
-                      shadow-2xl rounded-3xl p-8 animate-fadeIn"
-      >
-        <h2 className="text-3xl font-bold text-center text-white mb-7 tracking-wide">
-          Freelancer Registration
-        </h2>
+    <div className="min-h-screen flex items-center justify-center bg-gray-900 px-4">
+      <div className="w-full max-w-md p-8 bg-gray-800/70 backdrop-blur-xl rounded-3xl shadow-lg">
+        <h2 className="text-3xl font-bold text-center text-white mb-6">Freelancer Registration</h2>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-          {/* Full Name */}
-          <div className="relative group">
+          {/* Name */}
+          <div>
             <label className="text-gray-300 text-sm">Full Name</label>
-            <div
-              className="flex items-center bg-[#1f2937] rounded-xl border border-white/10 
-                            px-3 py-3 mt-1 group-focus-within:border-purple-500 transition"
-            >
+            <div className="flex items-center bg-gray-700 rounded-xl px-3 py-3 mt-1">
               <User size={20} className="text-gray-400 mr-3" />
               <input
                 {...register("name", { required: "Name is required" })}
-                className="bg-transparent text-white outline-none w-full"
-                placeholder="Enter your full name"
+                placeholder="Enter your name"
+                className="bg-transparent w-full outline-none text-white"
               />
             </div>
-            {errors.name && (
-              <p className="text-red-400 text-sm mt-1 font-medium">
-                {errors.name.message}
-              </p>
-            )}
+            {errors.name && <p className="text-red-400 text-sm mt-1">{errors.name.message}</p>}
           </div>
 
           {/* Email */}
-          <div className="relative group">
-            <label className="text-gray-300 text-sm">Email Address</label>
-            <div
-              className="flex items-center bg-[#1f2937] rounded-xl border border-white/10 
-                            px-3 py-3 mt-1 group-focus-within:border-purple-500 transition"
-            >
+          <div>
+            <label className="text-gray-300 text-sm">Email</label>
+            <div className="flex items-center bg-gray-700 rounded-xl px-3 py-3 mt-1">
               <Mail size={20} className="text-gray-400 mr-3" />
               <input
                 {...register("email", {
                   required: "Email is required",
-                  pattern: {
-                    value: /^\S+@\S+$/i,
-                    message: "Invalid email address",
-                  },
+                  pattern: { value: /^\S+@\S+$/i, message: "Invalid email" },
                 })}
-                className="bg-transparent text-white outline-none w-full"
                 placeholder="Enter your email"
+                className="bg-transparent w-full outline-none text-white"
               />
             </div>
-            {errors.email && (
-              <p className="text-red-400 text-sm mt-1 font-medium">
-                {errors.email.message}
-              </p>
-            )}
+            {errors.email && <p className="text-red-400 text-sm mt-1">{errors.email.message}</p>}
           </div>
 
           {/* Password */}
-          <div className="relative group">
+          <div>
             <label className="text-gray-300 text-sm">Password</label>
-            <div
-              className="flex items-center bg-[#1f2937] rounded-xl border border-white/10 
-                            px-3 py-3 mt-1 group-focus-within:border-purple-500 transition"
-            >
+            <div className="flex items-center bg-gray-700 rounded-xl px-3 py-3 mt-1">
               <Lock size={20} className="text-gray-400 mr-3" />
               <input
                 type="password"
-                {...register("password", {
-                  required: "Password is required",
-                  minLength: { value: 8, message: "Minimum 8 characters" },
-                  pattern: {
-                    value:
-                      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?&#]{8,}$/,
-                    message:
-                      "Password must include uppercase, lowercase, number, and special character",
-                  },
-                })}
-                className="bg-transparent text-white outline-none w-full"
+                {...register("password", { required: "Password is required", minLength: { value: 8, message: "Minimum 8 characters" } })}
                 placeholder="Enter your password"
+                className="bg-transparent w-full outline-none text-white"
               />
             </div>
-            {errors.password && (
-              <p className="text-red-400 text-sm mt-1 font-medium">
-                {errors.password.message}
-              </p>
-            )}
+            {errors.password && <p className="text-red-400 text-sm mt-1">{errors.password.message}</p>}
           </div>
 
           {/* Profile Image */}
           <div>
-            <label className="text-gray-300 text-sm">
-              Profile Image (Optional)
-            </label>
-
-            <div
-              className="flex items-center bg-[#1f2937] border border-white/10 
-                            rounded-xl px-3 py-3 mt-1"
-            >
+            <label className="text-gray-300 text-sm">Profile Image (optional)</label>
+            <div className="flex items-center bg-gray-700 rounded-xl px-3 py-3 mt-1">
               <ImageIcon size={20} className="text-gray-400 mr-3" />
               <input
                 type="file"
                 accept="image/*"
                 {...register("profileImage")}
-                className="text-gray-300 bg-transparent outline-none w-full"
+                className="w-full text-gray-300 bg-transparent outline-none"
               />
             </div>
-
             {preview && (
               <div className="mt-3 flex justify-center">
-                <img
-                  src={preview}
-                  alt="Preview"
-                  className="w-24 h-24 rounded-full object-cover border-4 border-purple-500 shadow-lg"
-                />
+                <img src={preview} alt="Preview" className="w-24 h-24 rounded-full object-cover border-4 border-purple-500" />
               </div>
             )}
           </div>
 
-          <input {...register("role")} type="hidden" value="freelancer" />
-
-          {/* Register Button */}
+          {/* Submit */}
           <button
             type="submit"
             disabled={loading}
-            className="w-full p-3 flex justify-center items-center
-              bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-xl 
-              font-semibold shadow-lg hover:opacity-90 transition-all 
-              disabled:opacity-60 disabled:cursor-not-allowed"
+            className="w-full py-3 bg-gradient-to-r from-purple-600 to-blue-600 rounded-xl text-white font-semibold flex justify-center items-center disabled:opacity-60"
           >
-            {loading ? (
-              <Loader2 className="animate-spin" size={22} />
-            ) : (
-              "Register"
-            )}
+            {loading ? <Loader2 className="animate-spin" size={20} /> : "Register"}
           </button>
         </form>
 
         <p className="text-center text-gray-400 mt-6 text-sm">
-          Already a user?{" "}
-          <Link
-            className="text-purple-400 hover:underline font-semibold"
-            to="/freelancer/login"
-          >
-            Login here
+          Already registered?{" "}
+          <Link to="/freelancer/login" className="text-purple-400 font-semibold hover:underline">
+            Login
           </Link>
         </p>
       </div>
