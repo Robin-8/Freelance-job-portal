@@ -136,23 +136,15 @@ function App() {
           <Route path="/client/chat" element={<ChatPage />} />
 
           {/* Admin */}
-          <Route
-            path="/admin/home"
-            element={
-              <AdminProtectedRoute>
-                <AdminHome />
-              </AdminProtectedRoute>
-            }
-          />
-          <Route path="/admin/login" element={<AdminLogin />} />
-          <Route path="/admin/register" element={<AdminRegister />} />
-          <Route path="/admin/adminAddJob" element={<AdminAddJob />} />
-          <Route path="/admin/userMgt" element={<AdminMgtUsers />} />
-          <Route path="/admin/getAdminJobs" element={<AdminGetAllJobs />} />
-          <Route path="/admin/getPreposals" element={<AdminGetPreposals />} />
-          <Route path="/admin/editJobs/:id" element={<AdminEditJobs />} />
-          <Route path="/admin/chat" element={<ChatPage />} />
-          <Route path="/chat" element={<ChatPage />} />
+          <Route element={<AdminProtectedRoute />}>
+            <Route path="/admin/home" element={<AdminHome />} />
+            <Route path="/admin/adminAddJob" element={<AdminAddJob />} />
+            <Route path="/admin/userMgt" element={<AdminMgtUsers />} />
+            <Route path="/admin/getAdminJobs" element={<AdminGetAllJobs />} />
+            <Route path="/admin/getPreposals" element={<AdminGetPreposals />} />
+            <Route path="/admin/editJobs/:id" element={<AdminEditJobs />} />
+            <Route path="/admin/chat" element={<ChatPage />} />
+          </Route>
         </Route>
       </Routes>
     </>
