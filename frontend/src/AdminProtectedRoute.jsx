@@ -1,18 +1,21 @@
+// middleware/AdminProtectedRoute.jsx (Corrected Logic)
+
+import React from "react";
 import { Navigate } from "react-router-dom";
-import { useSelector } from "react-redux";
 
 const AdminProtectedRoute = ({ children }) => {
-  const { user, token } = useSelector((state) => state.client);
+  const token = localStorage.getItem("token");
+  const role = localStorage.getItem("role");
 
-  if (!token || !user) {
-    return <Navigate to="/admin/login" replace />;
-  }
+  if (!token) {
+    return <Navigate to="/admin/login" replace />;
+  }
 
-  if (user.role !== "admin") {
-    return <Navigate to="/freelancer/login" replace />;
-  }
+  if (role !== "admin") {
+    return <Navigate to="/admin/login" replace />;
+  }
 
-  return children;
+  return children;
 };
 
 export default AdminProtectedRoute;
