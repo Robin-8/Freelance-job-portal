@@ -1,9 +1,9 @@
 import bcrypt from "bcrypt";
 import adminModel from "../model/clientModel.js";
-import { generateToken } from "../jwt/jwt.js";
 import clientModel from "../model/clientModel.js";
 import jobModel from "../model/jobModel.js";
 import proposalModel from "../model/proposalModel.js";
+import generateToken from "../jwt/jwt.js";
 
 // ================= REGISTER =================
 export const register = async (req, res) => {
@@ -43,6 +43,9 @@ export const register = async (req, res) => {
 };
 
 // ================= LOGIN =================
+
+
+// Assuming this is your Admin Login Controller file
 export const login = async (req, res) => {
   const { email, password } = req.body;
 
@@ -54,7 +57,7 @@ export const login = async (req, res) => {
     }
 
     if (user.role !== "admin") {
-      return res.status(403).json({ message: "Access denied. Not an admin." });
+      return res.status(403).json({ message: "Access denied. Admin only." });
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
@@ -62,7 +65,7 @@ export const login = async (req, res) => {
       return res.status(401).json({ message: "Invalid email or password" });
     }
 
-    const token = generateToken(user._id, user.role);
+    const token = generateToken(user);
 
     return res.status(200).json({
       message: "Admin login successful",
@@ -72,11 +75,11 @@ export const login = async (req, res) => {
         email: user.email,
         role: user.role,
       },
-      token,
+      token, // ✅ STRING
     });
-  } catch (err) {
-    console.error("Admin login error:", err);
-    res.status(500).json({ message: "Server error" });
+  } catch (error) {
+    console.error("Admin login error:", error);
+    return res.status(500).json({ message: "Server error" });
   }
 };
 
