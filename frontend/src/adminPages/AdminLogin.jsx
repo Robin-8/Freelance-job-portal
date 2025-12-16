@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useDispatch } from "react-redux";
 import { useNavigate, Link } from "react-router-dom";
@@ -14,32 +14,49 @@ const AdminLogin = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
+  /* ------------------ AUTO REDIRECT IF ALREADY LOGGED IN ------------------ */
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    const role = localStorage.getItem("role");
+
+    if (token && role === "admin") {
+      navigate("/admin/home", { replace: true });
+    }
+  }, [navigate]);
+
   const {
     register,
     handleSubmit,
     formState: { errors },
   } = useForm();
 
-  // 🔐 Admin Login Mutation
+  /* ------------------ ADMIN LOGIN MUTATION ------------------ */
   const adminLoginMutation = useMutation({
     mutationFn: async (formData) => {
       const res = await axiosInstance.post("/admin/login", formData);
       return res.data;
     },
+
     onSuccess: (data) => {
-      // ✅ Persist authentication
+      /* ------------------ ROLE SAFETY CHECK ------------------ */
+      if (data?.user?.role !== "admin") {
+        toast.error("Access denied. Admin only.");
+        return;
+      }
+
+      /* ------------------ PERSIST SESSION ------------------ */
       localStorage.setItem("token", data.token);
       localStorage.setItem("role", data.user.role);
       localStorage.setItem("user", JSON.stringify(data.user));
 
-      // ✅ Update Redux store
+      /* ------------------ UPDATE REDUX ------------------ */
       dispatch(login(data));
 
       toast.success("Admin login successful");
 
-      // ✅ Navigate to admin dashboard
       navigate("/admin/home", { replace: true });
     },
+
     onError: (error) => {
       toast.error(
         error?.response?.data?.message || "Admin login failed"
@@ -57,7 +74,7 @@ const AdminLogin = () => {
         className="w-full max-w-md bg-[#111827]/70 backdrop-blur-xl
                    border border-white/10 shadow-2xl rounded-3xl p-8"
       >
-        {/* Header */}
+        {/* ------------------ HEADER ------------------ */}
         <div className="flex flex-col items-center mb-6">
           <Shield size={44} className="text-purple-500" />
           <h2 className="text-3xl font-bold text-white mt-2">
@@ -68,8 +85,9 @@ const AdminLogin = () => {
           </p>
         </div>
 
-        {/* Form */}
+        {/* ------------------ FORM ------------------ */}
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+
           {/* Email */}
           <div>
             <label className="text-gray-300 text-sm">Email</label>
@@ -133,7 +151,7 @@ const AdminLogin = () => {
           </button>
         </form>
 
-        {/* Footer */}
+        {/* ------------------ FOOTER ------------------ */}
         <p className="text-center text-gray-400 text-sm mt-6">
           Don’t have an admin account?{" "}
           <Link
