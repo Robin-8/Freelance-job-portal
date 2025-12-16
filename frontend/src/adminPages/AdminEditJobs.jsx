@@ -1,15 +1,17 @@
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useSelector } from "react-redux";
 import { useParams, useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import axiosInstance from "../api/axiosApi";
+import toast from "react-hot-toast";
 
 const AdminEditJobs = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { token } = useSelector((state) => state.client);
 
-  // ---------------- FETCH JOB DATA ----------------
+  /* ---------------- FETCH JOB ---------------- */
+
   const { data, isLoading, isError, error } = useQuery({
     queryKey: ["editJob", id],
     queryFn: async () => {
@@ -20,23 +22,29 @@ const AdminEditJobs = () => {
     },
   });
 
+  /* ---------------- FORM STATE ---------------- */
+
   const [form, setForm] = useState({
     title: "",
     description: "",
     budget: "",
   });
 
-  if (data && form.title === "") {
-    setForm({
-      title: data.title,
-      description: data.description,
-      budget: data.budget,
-    });
-  }
+  useEffect(() => {
+    if (data) {
+      setForm({
+        title: data.title,
+        description: data.description,
+        budget: data.budget,
+      });
+    }
+  }, [data]);
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
+
+  /* ---------------- UPDATE MUTATION ---------------- */
 
   const mutation = useMutation({
     mutationFn: async () => {
@@ -49,9 +57,21 @@ const AdminEditJobs = () => {
       );
       return res.data;
     },
+
+    onMutate: () => {
+      toast.loading("Updating job...", { id: "update-job" });
+    },
+
     onSuccess: () => {
-      alert("Job updated successfully!");
+      toast.success("Job updated successfully!", { id: "update-job" });
       navigate("/admin/getAdminJobs");
+    },
+
+    onError: (error) => {
+      toast.error(
+        error?.response?.data?.message || "Failed to update job",
+        { id: "update-job" }
+      );
     },
   });
 
@@ -60,7 +80,8 @@ const AdminEditJobs = () => {
     mutation.mutate();
   };
 
-  // ---------------- Loading Spinner ----------------
+  /* ---------------- LOADING ---------------- */
+
   if (isLoading)
     return (
       <div className="flex justify-center items-center h-[60vh]">
@@ -68,7 +89,8 @@ const AdminEditJobs = () => {
       </div>
     );
 
-  // ---------------- Error ----------------
+  /* ---------------- ERROR ---------------- */
+
   if (isError)
     return (
       <p className="text-center text-red-400 mt-10">
@@ -76,16 +98,16 @@ const AdminEditJobs = () => {
       </p>
     );
 
+  /* ---------------- UI ---------------- */
+
   return (
     <div className="max-w-3xl mx-auto bg-[#121417] p-10 mt-12 shadow-xl rounded-2xl border border-[#1f232a] text-gray-200">
-      
       <h1 className="text-3xl font-bold mb-8 text-white tracking-tight">
         Edit Job – <span className="text-indigo-400">{form.title}</span>
       </h1>
 
       <form onSubmit={handleSubmit} className="space-y-6">
 
-        {/* Job Title */}
         <div>
           <label className="block mb-1 text-gray-400 font-medium">Job Title</label>
           <input
@@ -98,7 +120,6 @@ const AdminEditJobs = () => {
           />
         </div>
 
-        {/* Description */}
         <div>
           <label className="block mb-1 text-gray-400 font-medium">Description</label>
           <textarea
@@ -107,10 +128,9 @@ const AdminEditJobs = () => {
             onChange={handleChange}
             className="w-full h-32 p-3 bg-[#1a1d22] border border-[#2b3039] rounded-lg
                        text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-          ></textarea>
+            />
         </div>
 
-        {/* Budget */}
         <div>
           <label className="block mb-1 text-gray-400 font-medium">Budget</label>
           <input
@@ -123,7 +143,6 @@ const AdminEditJobs = () => {
           />
         </div>
 
-        {/* Submit Button */}
         <div className="flex justify-end pt-4">
           <button
             type="submit"
