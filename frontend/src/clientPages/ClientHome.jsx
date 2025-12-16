@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import {
   Wallet,
@@ -14,7 +14,6 @@ import socket from "../socket";
 import axiosInstance from "../api/axiosApi";
 import { useQuery } from "@tanstack/react-query";
 
-// Recharts
 import {
   BarChart,
   Bar,
@@ -23,29 +22,30 @@ import {
   Cell,
   Tooltip,
   ResponsiveContainer,
+  XAxis,
+  YAxis,
 } from "recharts";
 
 const ClientHome = () => {
   const { user } = useSelector((state) => state.client);
   const [totalPayment, setTotalPayment] = useState(0);
 
+  // Join socket room
   useEffect(() => {
     if (user?._id) {
-      socket.emit("join", {
-        userId: user._id,
-        role: "Client",
-      });
+      socket.emit("join", { userId: user._id, role: "Client" });
     }
   }, [user]);
 
+  // Fetch total freelancers applied
   const { data: freelancerSummary } = useQuery({
     queryKey: ["clientFreelancerApplied"],
     queryFn: async () => {
       const res = await axiosInstance.get("/client/total-freelancers");
       return res.data;
     },
+    enabled: !!user?._id,
   });
-  const totalFreelancersApplied = freelancerSummary?.totalApplicants || 0;
 
   // Fetch jobs posted count
   const { data: jobsSummary } = useQuery({
@@ -54,48 +54,61 @@ const ClientHome = () => {
       const res = await axiosInstance.get("/client/jobs-posted");
       return res.data;
     },
+    enabled: !!user?._id,
   });
-  const jobsPosted = jobsSummary?.jobsPosted || 0;
 
-  useEffect(() => {
-    const fetchTotal = async () => {
-      try {
-        const { data } = await axiosInstance.get(`/payment/client/total`);
-        setTotalPayment(data.total);
-      } catch (err) {
-        console.log("Total payment fetch error", err);
-      }
-    };
-
-    if (user?._id) fetchTotal();
-  }, [user]);
-
-  // Fetch Payment Summary
+  // Fetch monthly payment summary
   const { data: paymentSummary } = useQuery({
     queryKey: ["clientPaymentSummary"],
     queryFn: async () => {
       const res = await axiosInstance.get(`/payment/client/summary`);
       return res.data;
     },
+    enabled: !!user?._id,
   });
 
-  const paymentData = paymentSummary?.monthly || [];
-
-  // Fetch Proposal Statistics
+  // Fetch proposal statistics
   const { data: proposalStats } = useQuery({
     queryKey: ["clientProposalStats"],
     queryFn: async () => {
       const res = await axiosInstance.get("/client/proposal-stats");
       return res.data;
     },
+    enabled: !!user?._id,
   });
 
+  // Fetch total payment
+  useEffect(() => {
+    const fetchTotal = async () => {
+      try {
+        const { data } = await axiosInstance.get(`/payment/client/total`);
+        setTotalPayment(data.total || 0);
+      } catch (err) {
+        console.log("Total payment fetch error", err);
+      }
+    };
+    if (user?._id) fetchTotal();
+  }, [user]);
+
+  if (!user) return <div className="p-4 text-white">Please login</div>;
+
+  // Defaults
+  const totalFreelancersApplied = freelancerSummary?.totalApplicants || 0;
+  const jobsPosted = jobsSummary?.jobsPosted || 0;
+
+  // Format payment data for BarChart
+  const monthlyPayments =
+    paymentSummary?.monthly?.map((item) => ({
+      month: item.month || "N/A",
+      amount: item.amount || 0,
+    })) || [];
+
+  // Format proposal data for PieChart
   const proposalData = [
     { name: "Applied", value: proposalStats?.applied || 0 },
     { name: "Accepted", value: proposalStats?.accepted || 0 },
     { name: "Rejected", value: proposalStats?.rejected || 0 },
   ];
-
   const COLORS = ["#34D399", "#60A5FA", "#F87171"];
 
   return (
@@ -107,6 +120,7 @@ const ClientHome = () => {
         </p>
       </div>
 
+      {/* SUMMARY CARDS */}
       <div className="max-w-6xl mx-auto grid grid-cols-1 sm:grid-cols-3 gap-6 mt-10">
         <div className="bg-gray-900 p-6 rounded-2xl shadow flex items-center gap-5">
           <Wallet className="w-12 h-12 text-green-400" />
@@ -152,9 +166,7 @@ const ClientHome = () => {
         >
           <Briefcase className="w-10 h-10 text-blue-400 group-hover:scale-110 transition" />
           <h2 className="text-xl font-semibold mt-4">My Jobs</h2>
-          <p className="text-gray-400 mt-2 text-sm">
-            View & manage your posted jobs.
-          </p>
+          <p className="text-gray-400 mt-2 text-sm">View & manage your posted jobs.</p>
         </Link>
 
         <Link
@@ -163,9 +175,7 @@ const ClientHome = () => {
         >
           <ClipboardList className="w-10 h-10 text-yellow-400 group-hover:scale-110 transition" />
           <h2 className="text-xl font-semibold mt-4">Proposals</h2>
-          <p className="text-gray-400 mt-2 text-sm">
-            Review freelancer proposals.
-          </p>
+          <p className="text-gray-400 mt-2 text-sm">Review freelancer proposals.</p>
         </Link>
 
         <Link
@@ -178,39 +188,42 @@ const ClientHome = () => {
         </Link>
       </div>
 
-      {/* MONTHLY PAYMENT CHART */}
+      {/* CHARTS */}
       <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-10 mt-16">
+        {/* Monthly Payment BarChart */}
         <div className="bg-gray-900 p-6 rounded-2xl shadow">
-          <h3 className="text-xl font-semibold mb-4">
-            Monthly Payment Summary
-          </h3>
-          <ResponsiveContainer width="100%" height={250}>
-            <BarChart data={paymentData}>
-              <Tooltip />
-              <Bar dataKey="amount" fill="#3B82F6" radius={[8, 8, 0, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
+          <h3 className="text-xl font-semibold mb-4">Monthly Payment Summary</h3>
+          {monthlyPayments.length === 0 ? (
+            <p className="text-gray-400">No payment data available.</p>
+          ) : (
+            <ResponsiveContainer width="100%" height={250}>
+              <BarChart data={monthlyPayments}>
+                <XAxis dataKey="month" stroke="#9ca3af" />
+                <YAxis stroke="#9ca3af" />
+                <Tooltip />
+                <Bar dataKey="amount" fill="#3B82F6" radius={[8, 8, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          )}
         </div>
 
-        {/* PROPOSAL PIE CHART */}
+        {/* Proposal PieChart */}
         <div className="bg-gray-900 p-6 rounded-2xl shadow">
           <h3 className="text-xl font-semibold mb-4">Proposal Overview</h3>
-          <ResponsiveContainer width="100%" height={250}>
-            <PieChart>
-              <Pie
-                data={proposalData}
-                cx="50%"
-                cy="50%"
-                outerRadius={80}
-                dataKey="value"
-              >
-                {proposalData.map((_, i) => (
-                  <Cell key={i} fill={COLORS[i]} />
-                ))}
-              </Pie>
-              <Tooltip />
-            </PieChart>
-          </ResponsiveContainer>
+          {proposalData.reduce((sum, p) => sum + p.value, 0) === 0 ? (
+            <p className="text-gray-400">No proposals submitted yet.</p>
+          ) : (
+            <ResponsiveContainer width="100%" height={250}>
+              <PieChart>
+                <Pie data={proposalData} cx="50%" cy="50%" outerRadius={80} dataKey="value">
+                  {proposalData.map((_, i) => (
+                    <Cell key={i} fill={COLORS[i]} />
+                  ))}
+                </Pie>
+                <Tooltip />
+              </PieChart>
+            </ResponsiveContainer>
+          )}
         </div>
       </div>
     </div>

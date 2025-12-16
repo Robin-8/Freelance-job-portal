@@ -143,10 +143,8 @@ function App() {
           <Route path="/admin/getAdminJobs" element={<AdminGetAllJobs />} />
           <Route path="/admin/getPreposals" element={<AdminGetPreposals />} />
           <Route path="/admin/editJobs/:id" element={<AdminEditJobs />} />
-
-          {/* Chat (others) */}
           <Route path="/admin/chat" element={<ChatPage />} />
-          <Route path="/chatPage" element={<ChatPage />} />
+          <Route path="/chat" element={<ChatPage />} />
         </Route>
       </Routes>
     </>
