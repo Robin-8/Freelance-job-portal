@@ -23,7 +23,7 @@ import { authAdmin } from '../middileware/adminMIddileware.js';
 const router = express.Router(); // ✅ use const router = express.Router();
 
 router.post('/adminRegister', register);
-router.post('/adminLogin', login);
+router.post('/login', login);
 router.get('/getUsers', authAdmin, getUsers);
 router.delete('/deleteUser', authAdmin, deleteUsers);
 router.put('/blockUser/:id', authAdmin, blockUsers);

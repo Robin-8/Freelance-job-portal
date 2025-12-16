@@ -47,7 +47,8 @@ export const login = async (req, res) => {
   const { email, password } = req.body;
 
   try {
-    const user = await User.findOne({ email });
+    const user = await clientModel.findOne({ email });
+
     if (!user) {
       return res.status(401).json({ message: "Invalid email or password" });
     }
@@ -61,7 +62,7 @@ export const login = async (req, res) => {
       return res.status(401).json({ message: "Invalid email or password" });
     }
 
-    const token = generateToken(user);
+    const token = generateToken(user._id, user.role);
 
     return res.status(200).json({
       message: "Admin login successful",
