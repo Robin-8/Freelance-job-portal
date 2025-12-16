@@ -23,7 +23,7 @@ function AdminLogin() {
   // Admin Login Mutation
   const adminMutation = useMutation({
     mutationFn: async (formData) => {
-      const res = await axiosInstance.post("/admin/adminLogin", formData);
+      const res = await axiosInstance.post("/admin/login", formData);
       return res.data;
     },
     onSuccess: (data) => {

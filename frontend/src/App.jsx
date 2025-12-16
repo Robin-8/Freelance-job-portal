@@ -33,6 +33,7 @@ import Payment from "./payment/Payment";
 import ProtectedRoute from "./ProtectedRoute";
 import { Toaster } from "react-hot-toast";
 import AdminAddJob from "./adminPages/AdminAddJob";
+import AdminProtectedRoute from "./AdminProtectedRoute";
 
 function App() {
   const { user } = useSelector((state) => state.client);
@@ -135,7 +136,14 @@ function App() {
           <Route path="/client/chat" element={<ChatPage />} />
 
           {/* Admin */}
-          <Route path="/admin/home" element={<AdminHome />} />
+          <Route
+            path="/admin/home"
+            element={
+              <AdminProtectedRoute>
+                <AdminHome />
+              </AdminProtectedRoute>
+            }
+          />
           <Route path="/admin/login" element={<AdminLogin />} />
           <Route path="/admin/register" element={<AdminRegister />} />
           <Route path="/admin/adminAddJob" element={<AdminAddJob />} />
