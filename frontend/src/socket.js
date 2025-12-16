@@ -1,8 +1,11 @@
 import { io } from "socket.io-client";
 
-console.log("BACKEND URL =", import.meta.env.VITE_BACKEND_URL);
+// Use the socket-specific env variable
+const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || "http://localhost:3000";
 
-const socket = io(import.meta.env.VITE_BACKEND_URL || "http://localhost:3000", {
+console.log("SOCKET URL =", SOCKET_URL);
+
+const socket = io(SOCKET_URL, {
   transports: ["polling"],
   withCredentials: true,
 });
