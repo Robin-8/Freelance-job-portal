@@ -47,30 +47,34 @@ export const login = async (req, res) => {
   const { email, password } = req.body;
 
   try {
-    const adminExisting = await adminModel.findOne({ email });
-    if (!adminExisting) {
+    const user = await User.findOne({ email });
+    if (!user) {
       return res.status(401).json({ message: "Invalid email or password" });
     }
 
-    const isMatch = await bcrypt.compare(password, adminExisting.password);
+    if (user.role !== "admin") {
+      return res.status(403).json({ message: "Access denied. Not an admin." });
+    }
+
+    const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       return res.status(401).json({ message: "Invalid email or password" });
     }
 
-    const token = await generateToken(adminExisting);
+    const token = generateToken(user);
 
     return res.status(200).json({
-      message: "Login successful",
+      message: "Admin login successful",
       user: {
-        _id: adminExisting._id,
-        name: adminExisting.name,
-        email: adminExisting.email,
-        role: adminExisting.role,
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
       },
       token,
     });
-  } catch (error) {
-    console.error("Login error:", error);
+  } catch (err) {
+    console.error("Admin login error:", err);
     res.status(500).json({ message: "Server error" });
   }
 };

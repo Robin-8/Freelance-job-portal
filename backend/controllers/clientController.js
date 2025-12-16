@@ -360,6 +360,74 @@ export const getClientProposalStats = async (req, res) => {
   }
 };
 
+export const getClientHomeData = async (req, res) => {
+  try {
+    const clientId = req.client?._id;
+    if (!clientId) return res.status(401).json({ message: "Unauthorized" });
+
+    // Jobs posted
+    const jobs = await jobModel.find({ postedBy: clientId, isDeleted: false }).select("_id title");
+    const jobsPosted = jobs.length;
+    const jobIds = jobs.map((j) => j._id);
+
+    // Freelancers applied
+    const totalFreelancersApplied =
+      jobIds.length > 0 ? await proposalModel.countDocuments({ job: { $in: jobIds } }) : 0;
+
+    // Proposal stats
+    let applied = 0,
+      accepted = 0,
+      rejected = 0;
+    if (jobIds.length > 0) {
+      const stats = await proposalModel.aggregate([
+        { $match: { job: { $in: jobIds } } },
+        { $group: { _id: "$status", count: { $sum: 1 } } },
+      ]);
+
+      stats.forEach((s) => {
+        if (s._id === "pending") applied = s.count;
+        if (s._id === "accepted") accepted = s.count;
+        if (s._id === "rejected") rejected = s.count;
+      });
+    }
+
+    // Total payment
+    const totalPaymentAgg = await paymentModel.aggregate([
+      { $match: { client: clientId } },
+      { $group: { _id: null, total: { $sum: "$amount" } } },
+    ]);
+    const totalPayment = totalPaymentAgg[0]?.total || 0;
+
+    // Monthly payment summary
+    const monthlyPaymentsAgg = await paymentModel.aggregate([
+      { $match: { client: clientId } },
+      {
+        $group: {
+          _id: { month: { $month: "$createdAt" }, year: { $year: "$createdAt" } },
+          amount: { $sum: "$amount" },
+        },
+      },
+      { $sort: { "_id.year": 1, "_id.month": 1 } },
+    ]);
+
+    const monthlyPayments = monthlyPaymentsAgg.map((m) => ({
+      month: `${m._id.month}-${m._id.year}`,
+      amount: m.amount,
+    }));
+
+    return res.status(200).json({
+      jobsPosted,
+      totalFreelancersApplied,
+      proposalStats: { applied, accepted, rejected },
+      totalPayment,
+      monthlyPayments,
+    });
+  } catch (error) {
+    console.error("Client home data error:", error);
+    return res.status(500).json({ message: "Server error" });
+  }
+};
+
 export default {
   register,
   login,

@@ -11,7 +11,7 @@ import adminRoute from "./routes/adminRoute.js";
 import freeLanceRoute from "./routes/freeLanceRoute.js";
 import chatRoutes from "./routes/chatRoute.js";
 import paymentRoutes from "./routes/paymentRoute.js";
-
+import Chat from "./model/chatModel.js"
 
 const app = express();
 
@@ -43,30 +43,27 @@ const io = new Server(server, {
 let onlineUsers = {};
 
 io.on("connection", (socket) => {
-  socket.on("join", ({ userId }) => {
-    onlineUsers[userId] = socket.id;
-  });
+ 
 
-  socket.on("join_room", (roomId) => {
-    socket.join(roomId);
-  });
+  socket.on("send_message", async (data) => {
 
-  socket.on("send_message", ({ senderId, receiverId, message }) => {
-    const roomId = [senderId, receiverId].sort().join("-");
-    io.to(roomId).emit("receive_message", {
-      senderId,
-      receiverId,
-      message,
-      timestamp: new Date(),
-    });
-  });
 
-  socket.on("disconnect", () => {
-    for (let id in onlineUsers) {
-      if (onlineUsers[id] === socket.id) delete onlineUsers[id];
+    try {
+      const newMessage = await Chat.create({
+        senderId: data.senderId,
+        receiverId: data.receiverId,
+        message: data.message,
+      });
+
+      const roomId = [data.senderId, data.receiverId].sort().join("-");
+      io.to(roomId).emit("receive_message", newMessage);
+
+    } catch (err) {
+      console.error("DB SAVE ERROR:", err);
     }
   });
 });
+
 
 app.use("/api/client", clientRoute);
 app.use("/api/admin", adminRoute);
