@@ -25,7 +25,7 @@ const router = express.Router(); // ✅ use const router = express.Router();
 router.post('/adminRegister', register);
 router.post('/login', login);
 router.get('/getUsers', authAdmin, getUsers);
-router.delete('/deleteUser', authAdmin, deleteUsers);
+router.delete('/deleteUser/:userId', authAdmin, deleteUsers);
 router.put('/blockUser/:id', authAdmin, blockUsers);
 router.get('/getJobs', authAdmin, adminGetJobs);
 router.post("/addJob", authAdmin, AdminAddJob);

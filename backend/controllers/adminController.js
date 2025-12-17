@@ -105,16 +105,23 @@ export const getAllAdmins = async (req, res) => {
 
 export const deleteUsers = async (req, res) => {
   try {
-    const userId = req.params.userId;
-    const result = await clientModel.deleteOne({ _id: userId });
+    const user = await clientModel.findById(req.params.userId);
 
-    if (result.deletedCount === 0) {
+    if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
 
-    return res.status(200).json({ message: "User deleted successfully" });
+    // 🔁 Toggle soft delete
+    user.isDeleted = !user.isDeleted;
+    await user.save();
+
+    return res.status(200).json({
+      message: user.isDeleted
+        ? "User deleted successfully"
+        : "User restored successfully",
+    });
   } catch (error) {
-    return res.status(500).json({ message: "Server error", error });
+    return res.status(500).json({ message: "Server error" });
   }
 };
 

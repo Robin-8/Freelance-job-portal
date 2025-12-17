@@ -52,6 +52,16 @@ export const login = async (req, res) => {
     if (!userExisting) {
       return res.status(401).json({ message: "Invalid email or password" });
     }
+    if (userExisting.isBlocked) {
+      return res.status(403).json({
+        message: "Your account has been blocked. Please contact admin.",
+      });
+    }
+    if(userExisting.isDeleted){
+      return res.status(403).json({
+        message: "Your account has been deleted. Please contact admin.",
+      });
+    }
 
     const isMatch = await bcrypt.compare(password, userExisting.password);
     if (!isMatch) {
@@ -132,7 +142,6 @@ export const addJob = async (req, res) => {
     return res.status(500).json({ message: "Internal server error" });
   }
 };
-
 
 export const updateJob = async (req, res) => {
   const { id } = req.params;
@@ -366,13 +375,17 @@ export const getClientHomeData = async (req, res) => {
     if (!clientId) return res.status(401).json({ message: "Unauthorized" });
 
     // Jobs posted
-    const jobs = await jobModel.find({ postedBy: clientId, isDeleted: false }).select("_id title");
+    const jobs = await jobModel
+      .find({ postedBy: clientId, isDeleted: false })
+      .select("_id title");
     const jobsPosted = jobs.length;
     const jobIds = jobs.map((j) => j._id);
 
     // Freelancers applied
     const totalFreelancersApplied =
-      jobIds.length > 0 ? await proposalModel.countDocuments({ job: { $in: jobIds } }) : 0;
+      jobIds.length > 0
+        ? await proposalModel.countDocuments({ job: { $in: jobIds } })
+        : 0;
 
     // Proposal stats
     let applied = 0,
@@ -403,7 +416,10 @@ export const getClientHomeData = async (req, res) => {
       { $match: { client: clientId } },
       {
         $group: {
-          _id: { month: { $month: "$createdAt" }, year: { $year: "$createdAt" } },
+          _id: {
+            month: { $month: "$createdAt" },
+            year: { $year: "$createdAt" },
+          },
           amount: { $sum: "$amount" },
         },
       },
