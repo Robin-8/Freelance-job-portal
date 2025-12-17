@@ -10,8 +10,6 @@ import { Toaster } from "react-hot-toast";
 import Layout from "./components/Layout";
 import socket from "./socket";
 import ChatPage from "./chat/ChatPage";
-import ProtectedRoute from "./ProtectedRoute"; // Freelancer Guard
-import AdminProtectedRoute from "./AdminProtectedRoute"; // Admin Guard
 
 // Freelancer Pages
 import FreelancerHome from "./freelancePages/FreelancerHome";
@@ -81,7 +79,7 @@ function App() {
 
 
           {/* === PROTECTED FREELANCER ROUTES (uses ProtectedRoute) === */}
-          <Route element={<ProtectedRoute />}>
+        
             <Route path="/freelancer/freelancerHome" element={<FreelancerHome />} />
             <Route path="/freelancer/searchJobs" element={<FreelancerSearch />} />
             <Route path="/freelancer/applyJob/:id" element={<FreelanceJobDetails />} />
@@ -89,7 +87,7 @@ function App() {
             <Route path="/freelancer/updateProfile" element={<FreelanceUpdateProfile />} />
             <Route path="/freelancer/getProfile" element={<FreelanceProfile />} />
             <Route path="/freelancer/chat" element={<ChatPage />} />
-          </Route>
+      
 
           {/* Client Routes (currently unprotected, you should add a ClientProtectedRoute) */}
           <Route path="/client/home" element={<ClientHome />} />
