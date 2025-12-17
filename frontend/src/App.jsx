@@ -102,15 +102,14 @@ function App() {
 
 
           {/* === PROTECTED ADMIN ROUTES (uses AdminProtectedRoute) === */}
-          <Route element={<AdminProtectedRoute />}>
-            <Route path="/admin/home" element={<AdminHome />} />
+           <Route path="/admin/home" element={<AdminHome/>}/>
             <Route path="/admin/adminAddJob" element={<AdminAddJob />} />
             <Route path="/admin/userMgt" element={<AdminMgtUsers />} />
             <Route path="/admin/getAdminJobs" element={<AdminGetAllJobs />} />
             <Route path="/admin/getPreposals" element={<AdminGetPreposals />} />
             <Route path="/admin/editJobs/:id" element={<AdminEditJobs />} />
             <Route path="/admin/chat" element={<ChatPage />} />
-          </Route>
+         
 
           {/* Catch-all route for Chat if necessary, should ideally be protected */}
           <Route path="/chat" element={<ChatPage />} /> 

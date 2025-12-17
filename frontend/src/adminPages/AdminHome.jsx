@@ -1,11 +1,10 @@
-// src/adminPages/AdminHome.jsx
-
 import React, { useEffect } from "react";
 import { useSelector } from "react-redux";
 import { Link } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import socket from "../socket";
 import axiosInstance from "../api/axiosApi";
-import { useQuery } from "@tanstack/react-query";
+
 import {
   Wallet,
   Users,
@@ -16,214 +15,226 @@ import {
   SquarePlus,
   Loader2,
 } from "lucide-react";
-import { BarChart, Bar, PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from "recharts";
+
+import {
+  BarChart,
+  Bar,
+  PieChart,
+  Pie,
+  Cell,
+  Tooltip,
+  ResponsiveContainer,
+} from "recharts";
 
 const AdminHome = () => {
+  console.log("first")
   const { user } = useSelector((state) => state.client);
 
-  // Join socket room
+
   useEffect(() => {
     if (user?._id) {
       socket.emit("join", { userId: user._id, role: "admin" });
-      console.log("Socket join:", user._id);
     }
   }, [user]);
 
-  // ====================== API Queries ======================
-  const {
-    data: totalPayment = 0,
-    isLoading: isPaymentLoading,
-    isError: isPaymentError,
-  } = useQuery({
-    queryKey: ["adminTotalPayments"],
-    queryFn: async () => (await axiosInstance.get("/admin/total-payments")).data.total || 0,
-  });
+  /* ================= API QUERIES ================= */
+
+  const { data: totalPayment, isLoading: payLoad, isError: payErr } =
+    useQuery({
+      queryKey: ["adminTotalPayments"],
+      queryFn: async () =>
+        (await axiosInstance.get("/admin/total-payments")).data.total,
+    });
 
   const {
-    data: freelancersApplied = 0,
-    isLoading: isFreelancersLoading,
-    isError: isFreelancersError,
+    data: freelancersApplied,
+    isLoading: freeLoad,
+    isError: freeErr,
   } = useQuery({
     queryKey: ["adminFreelancersApplied"],
-    queryFn: async () => (await axiosInstance.get("/admin/freelancers-applied")).data.totalApplicants || 0,
+    queryFn: async () =>
+      (await axiosInstance.get("/admin/freelancers-applied")).data
+        .totalApplicants,
   });
 
-  const {
-    data: jobsPosted = 0,
-    isLoading: isJobsLoading,
-    isError: isJobsError,
-  } = useQuery({
+  const { data: jobsPosted, isLoading: jobLoad, isError: jobErr } = useQuery({
     queryKey: ["adminJobsPosted"],
-    queryFn: async () => (await axiosInstance.get("/admin/jobs-posted")).data.jobsPosted || 0,
+    queryFn: async () =>
+      (await axiosInstance.get("/admin/jobs-posted")).data.jobsPosted,
   });
 
   const {
-    data: proposalStats = { applied: 0, accepted: 0, rejected: 0 },
-    isLoading: isProposalLoading,
-    isError: isProposalError,
+    data: proposalStats,
+    isLoading: propLoad,
+    isError: propErr,
   } = useQuery({
     queryKey: ["adminProposalStats"],
-    queryFn: async () => (await axiosInstance.get("/admin/proposal-stats")).data || { applied: 0, accepted: 0, rejected: 0 },
+    queryFn: async () =>
+      (await axiosInstance.get("/admin/proposal-stats")).data,
   });
 
   const {
-    data: monthlyPayments = [],
-    isLoading: isMonthlyLoading,
-    isError: isMonthlyError,
+    data: monthlyPayments,
+    isLoading: monthLoad,
+    isError: monthErr,
   } = useQuery({
     queryKey: ["adminMonthlyPayments"],
-    queryFn: async () => (await axiosInstance.get("/admin/monthly-payments")).data.monthly || [],
+    queryFn: async () =>
+      (await axiosInstance.get("/admin/monthly-payments")).data.monthly,
   });
 
-  // Overall loading and error
-  const isOverallLoading =
-    isPaymentLoading || isFreelancersLoading || isJobsLoading || isProposalLoading || isMonthlyLoading;
-  const isOverallError =
-    isPaymentError || isFreelancersError || isJobsError || isProposalError || isMonthlyError;
+  const isLoading =
+    payLoad || freeLoad || jobLoad || propLoad || monthLoad;
+  const isError = payErr || freeErr || jobErr || propErr || monthErr;
 
-  // Debug logs
-  console.log({ totalPayment, freelancersApplied, jobsPosted, proposalStats, monthlyPayments });
+  /* ================= CHART DATA ================= */
 
-  // ====================== Chart Data ======================
   const proposalData = [
     { name: "Applied", value: proposalStats?.applied || 0 },
     { name: "Accepted", value: proposalStats?.accepted || 0 },
     { name: "Rejected", value: proposalStats?.rejected || 0 },
   ];
+
   const COLORS = ["#34D399", "#60A5FA", "#F87171"];
 
-  // ====================== Render ======================
-  if (isOverallError) {
+  /* ================= ERROR STATE ================= */
+
+  if (isError) {
     return (
-      <div className="min-h-screen bg-gray-950 text-white flex items-center justify-center p-6">
-        <div className="bg-gray-900 p-8 rounded-xl shadow text-center">
-          <h2 className="text-2xl font-bold text-red-500 mb-2">Error Loading Data</h2>
-          <p className="text-gray-400">Check API endpoints and network tab.</p>
+      <div className="min-h-screen bg-gray-950 text-white flex items-center justify-center">
+        <div className="bg-gray-900 p-8 rounded-xl text-center">
+          <h2 className="text-2xl font-bold text-red-500">
+            Failed to Load Dashboard
+          </h2>
+          <p className="text-gray-400 mt-2">
+            Please verify backend status and API endpoints.
+          </p>
         </div>
       </div>
     );
   }
 
-  if (isOverallLoading) {
+  /* ================= LOADING STATE ================= */
+
+  if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-950 text-white flex items-center justify-center">
-        <Loader2 className="animate-spin w-6 h-6 mr-2" />
-        <span>Loading Dashboard Data...</span>
+      <div className="min-h-screen bg-gray-950 flex items-center justify-center">
+        <Loader2 className="w-7 h-7 text-blue-400 animate-spin mr-3" />
+        <span className="text-lg text-blue-400">
+          Loading Admin Dashboard...
+        </span>
       </div>
     );
   }
+
+  /* ================= UI ================= */
 
   return (
     <div className="min-h-screen bg-gray-950 text-white px-6 py-10">
       {/* HEADER */}
       <div className="max-w-6xl mx-auto">
         <h1 className="text-4xl font-bold">Admin Dashboard</h1>
-        <p className="text-gray-400 mt-2">System analytics & management overview.</p>
+        <p className="text-gray-400 text-lg mt-2">
+          System analytics & management overview
+        </p>
       </div>
 
-      {/* STATS CARDS */}
-      <div className="max-w-6xl mx-auto grid grid-cols-1 sm:grid-cols-3 gap-6 mt-10">
-        <div className="bg-gray-900 p-6 rounded-2xl shadow flex items-center gap-5">
-          <Wallet className="w-12 h-12 text-green-400" />
-          <div>
-            <p className="text-gray-400 text-sm">Total Revenue</p>
-            <h3 className="text-2xl font-bold">₹ {totalPayment}</h3>
-          </div>
-        </div>
-
-        <div className="bg-gray-900 p-6 rounded-2xl shadow flex items-center gap-5">
-          <Users className="w-12 h-12 text-blue-400" />
-          <div>
-            <p className="text-gray-400 text-sm">Freelancers Applied</p>
-            <h3 className="text-2xl font-bold">{freelancersApplied}</h3>
-          </div>
-        </div>
-
-        <div className="bg-gray-900 p-6 rounded-2xl shadow flex items-center gap-5">
-          <BarChart3 className="w-12 h-12 text-yellow-400" />
-          <div>
-            <p className="text-gray-400 text-sm">Jobs Posted</p>
-            <h3 className="text-2xl font-bold">{jobsPosted}</h3>
-          </div>
-        </div>
+      {/* STATS */}
+      <div className="max-w-6xl mx-auto grid sm:grid-cols-3 gap-6 mt-10">
+        <StatCard
+          icon={<Wallet className="w-12 h-12 text-green-400" />}
+          title="Total Revenue"
+          value={`₹ ${totalPayment || 0}`}
+        />
+        <StatCard
+          icon={<Users className="w-12 h-12 text-blue-400" />}
+          title="Freelancers Applied"
+          value={freelancersApplied || 0}
+        />
+        <StatCard
+          icon={<BarChart3 className="w-12 h-12 text-yellow-400" />}
+          title="Jobs Posted"
+          value={jobsPosted || 0}
+        />
       </div>
 
-      {/* ACTION LINKS */}
-      <div className="max-w-6xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-10">
-        <Link
-          to="/admin/userMgt"
-          className="group bg-gray-900 p-6 rounded-2xl shadow hover:bg-gray-850 transition"
-        >
-          <Users className="w-10 h-10 text-blue-400 group-hover:scale-110 transition" />
-          <h2 className="text-xl font-semibold mt-4">Manage Users</h2>
-          <p className="text-gray-400 mt-2 text-sm">View & control all users.</p>
-        </Link>
-
-        <Link
-          to="/admin/getAdminJobs"
-          className="group bg-gray-900 p-6 rounded-2xl shadow hover:bg-gray-850 transition"
-        >
-          <Briefcase className="w-10 h-10 text-green-400 group-hover:scale-110 transition" />
-          <h2 className="text-xl font-semibold mt-4">Jobs</h2>
-          <p className="text-gray-400 mt-2 text-sm">Monitor all job listings.</p>
-        </Link>
-
-        <Link
+      {/* ACTION CARDS */}
+      <div className="max-w-6xl mx-auto grid sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-10">
+        <AdminLink to="/admin/userMgt" icon={<Users />} title="Manage Users" />
+        <AdminLink to="/admin/getAdminJobs" icon={<Briefcase />} title="Jobs" />
+        <AdminLink
           to="/admin/getPreposals"
-          className="group bg-gray-900 p-6 rounded-2xl shadow hover:bg-gray-850 transition"
-        >
-          <ClipboardList className="w-10 h-10 text-yellow-400 group-hover:scale-110 transition" />
-          <h2 className="text-xl font-semibold mt-4">Proposals</h2>
-          <p className="text-gray-400 mt-2 text-sm">Review freelancer proposals.</p>
-        </Link>
-
-        <Link
+          icon={<ClipboardList />}
+          title="Proposals"
+        />
+        <AdminLink
           to="/admin/adminAddJob"
-          className="group bg-gray-900 p-6 rounded-2xl shadow hover:bg-gray-850 transition"
-        >
-          <SquarePlus className="w-10 h-10 text-pink-400 group-hover:scale-110 transition" />
-          <h2 className="text-xl font-semibold mt-4">Add Job</h2>
-          <p className="text-gray-400 mt-2 text-sm">Create new job listings.</p>
-        </Link>
-
-        <Link
-          to="/admin/chat"
-          className="group bg-gray-900 p-6 rounded-2xl shadow hover:bg-gray-850 transition"
-        >
-          <Inbox className="w-10 h-10 text-purple-400 group-hover:scale-110 transition" />
-          <h2 className="text-xl font-semibold mt-4">Messages</h2>
-          <p className="text-gray-400 mt-2 text-sm">Admin communication hub.</p>
-        </Link>
+          icon={<SquarePlus />}
+          title="Add Job"
+        />
+        <AdminLink to="/admin/chat" icon={<Inbox />} title="Messages" />
       </div>
 
       {/* CHARTS */}
-      <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-10 mt-16">
-        <div className="bg-gray-900 p-6 rounded-2xl shadow">
-          <h3 className="text-xl font-semibold mb-4">Monthly Revenue</h3>
+      <div className="max-w-6xl mx-auto grid lg:grid-cols-2 gap-10 mt-16">
+        <ChartCard title="Monthly Revenue">
           <ResponsiveContainer width="100%" height={250}>
-            <BarChart data={monthlyPayments}>
-              <Tooltip contentStyle={{ background: "#374151", border: "none" }} />
-              <Bar dataKey="amount" fill="#3B82F6" radius={[8, 8, 0, 0]} />
+            <BarChart data={monthlyPayments || []}>
+              <Tooltip />
+              <Bar dataKey="amount" radius={[8, 8, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
-        </div>
+        </ChartCard>
 
-        <div className="bg-gray-900 p-6 rounded-2xl shadow">
-          <h3 className="text-xl font-semibold mb-4">Proposal Overview</h3>
+        <ChartCard title="Proposal Overview">
           <ResponsiveContainer width="100%" height={250}>
             <PieChart>
-              <Pie data={proposalData} outerRadius={80} dataKey="value">
+              <Pie data={proposalData} dataKey="value" outerRadius={80}>
                 {proposalData.map((_, i) => (
                   <Cell key={i} fill={COLORS[i]} />
                 ))}
               </Pie>
-              <Tooltip contentStyle={{ background: "#374151", border: "none" }} />
+              <Tooltip />
             </PieChart>
           </ResponsiveContainer>
-        </div>
+        </ChartCard>
       </div>
     </div>
   );
 };
+
+/* ================= REUSABLE COMPONENTS ================= */
+
+const StatCard = ({ icon, title, value }) => (
+  <div className="bg-gray-900 p-6 rounded-2xl flex items-center gap-5">
+    {icon}
+    <div>
+      <p className="text-gray-400 text-sm">{title}</p>
+      <h3 className="text-2xl font-bold">{value}</h3>
+    </div>
+  </div>
+);
+
+const AdminLink = ({ to, icon, title }) => (
+  <Link
+    to={to}
+    className="group bg-gray-900 p-6 rounded-2xl hover:bg-gray-800 transition"
+  >
+    <div className="w-10 h-10 text-blue-400 group-hover:scale-110 transition">
+      {icon}
+    </div>
+    <h2 className="text-xl font-semibold mt-4">{title}</h2>
+    <p className="text-gray-400 text-sm mt-1">
+      Manage {title.toLowerCase()}
+    </p>
+  </Link>
+);
+
+const ChartCard = ({ title, children }) => (
+  <div className="bg-gray-900 p-6 rounded-2xl">
+    <h3 className="text-xl font-semibold mb-4">{title}</h3>
+    {children}
+  </div>
+);
 
 export default AdminHome;
