@@ -33,9 +33,13 @@ const AdminMgtUsers = () => {
   // Block / unblock user
   const blockMutation = useMutation({
     mutationFn: async (id) => {
-      return axiosInstance.put(`/admin/blockUser/${id}`, {}, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      return axiosInstance.put(
+        `/admin/blockUser/${id}`,
+        {},
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
     },
     onSuccess: () => queryClient.invalidateQueries(["adminUsers"]),
   });
@@ -123,9 +127,15 @@ const AdminMgtUsers = () => {
 
                     <button
                       onClick={() => deleteMutation.mutate(user._id)}
-                      className="px-4 py-1 bg-red-500 text-white rounded-lg text-sm hover:bg-red-600 transition flex items-center gap-1"
+                      className={`px-4 py-1 rounded-lg text-sm transition flex items-center gap-1
+    ${
+      user.isDeleted
+        ? "bg-green-600 hover:bg-green-700"
+        : "bg-red-600 hover:bg-red-700"
+    }`}
                     >
-                      <UserMinus size={14} /> Delete
+                      <UserMinus size={14} />
+                      {user.isDeleted ? "Restore" : "Delete"}
                     </button>
                   </td>
                 </tr>
