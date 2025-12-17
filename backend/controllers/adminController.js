@@ -4,6 +4,7 @@ import clientModel from "../model/clientModel.js";
 import jobModel from "../model/jobModel.js";
 import proposalModel from "../model/proposalModel.js";
 import generateToken from "../jwt/jwt.js";
+import paymentModel from "../model/paymentModel.js";
 
 // ================= REGISTER =================
 export const register = async (req, res) => {
@@ -75,7 +76,7 @@ export const login = async (req, res) => {
         email: user.email,
         role: user.role,
       },
-      token, // ✅ STRING
+      token, 
     });
   } catch (error) {
     console.error("Admin login error:", error);
@@ -220,7 +221,7 @@ export const deleteJob = async (req, res) => {
 
 export const getAdminTotalPayments = async (req, res) => {
   try {
-    const result = await Payment.aggregate([
+    const result = await paymentModel.aggregate([
       { $match: { status: "paid" } },
       { $group: { _id: null, totalPaid: { $sum: "$amount" } } },
     ]);
@@ -292,7 +293,7 @@ export const getAdminMonthlyPayments = async (req, res) => {
   try {
     const year = new Date().getFullYear();
 
-    const monthlyResult = await Payment.aggregate([
+    const monthlyResult = await paymentModel.aggregate([
       { $match: { status: "paid", createdAt: { $gte: new Date(`${year}-01-01`), $lte: new Date(`${year}-12-31`) } } },
       { $group: { _id: { month: { $month: "$createdAt" } }, amount: { $sum: "$amount" } } },
       { $sort: { "_id.month": 1 } },

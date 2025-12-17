@@ -1,5 +1,5 @@
 import jwt  from "jsonwebtoken";
-import clientModel  from "../model/clientModel.js"; // or adminModel if you have separate model
+import clientModel  from "../model/clientModel.js"; 
 
 export const authAdmin = async (req, res, next) => {
   const authHeader = req.headers.authorization;
@@ -13,7 +13,7 @@ export const authAdmin = async (req, res, next) => {
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    // Only admin can access this route
+    
     if (decoded.role !== "admin") {
       return res.status(403).json({ message: "Access forbidden. Admin only." });
     }
